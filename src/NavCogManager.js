@@ -39,8 +39,8 @@ function reloadData() {
 function reloadMap() {
 	try {
 		_map = getNewGoogleMap();
-		setMapVisibility();
-	} catch(e) {		
+		//setMapVisibility(_data.doneUseMap);
+	} catch(e) {
 	}
 	if (_map && _data.centerLat && _data.centerLng) {	
 		_map.setCenter({lat:_data.centerLat, lng:_data.centerLng});
@@ -54,7 +54,7 @@ function reloadMap() {
 	_lastMajorID = _data["lastMajorID"];
 	_lastMinorID = _data["lastMinorID"];
         _layers = _data.layers || {};
-	_buildingNames = _data.buildings;
+	_buildingNames = _data.buildings || [];
 	for (var name in _buildingNames) {
 		addOptionToSelect(_buildingNames[name], _topoEditorBuildingChooser);
 	}
@@ -90,7 +90,7 @@ function initMapEvent() {
 	});
     _map.addListener("click", function(e) {
     	if (_currentLayer == null) {
-    		window.alert("Please add at least one layer");
+    		window.alert(i18n.t("Please add at least one layer"));
     		return;
     	};
     	_mapEditorRegionLatInput.value = e.latLng.lat();
@@ -220,9 +220,9 @@ function initKeyboardEvent() {
 
 function addNewLayer() {
 	if (_layers[_mapEditorLayerInput.value]) {
-		window.alert("A layer with same z-index has been added");
+		window.alert(i18n.t("A layer with same z-index has been added"));
 	} else if (_mapEditorLayerInput.value == "") {
-		window.alert("Please input a z-index");
+		window.alert(i18n.t("Please input a z-index"));
 	} else {
 		var newLayer = getNewLayer({z:_mapEditorLayerInput.value});
 		_layers[newLayer.z] = newLayer;
@@ -396,7 +396,8 @@ function renewSelectWithProertyOfArrayWithDummy(array, property, dummy, chooser)
 		chooser.remove(chooser.selectedIndex);
 	}
 	var newOpt = document.createElement("option");
-	newOpt.text = dummy;
+	newOpt.text = i18n.t(dummy);
+	newOpt.value = dummy;
 	chooser.add(newOpt);
 	for (var key in array) {
 		var newOpt = document.createElement("option");

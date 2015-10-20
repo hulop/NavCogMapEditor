@@ -22,28 +22,28 @@
  
  function addNewRegion() {
 	if (_currentLayer == null) {
-		window.alert("You should have at least one layer");
+		window.alert(i18n.t("You should have at least one layer"));
 		return;
 	};
 
 	var regionName = _mapEditorRegionNameInput.value;
 	if (regionName == "") {
-		window.alert("Please input a name for region");
+		window.alert(i18n.t("Please input a name for region"));
 		return
 	};
 	if (_currentLayer.regions[regionName]) {
-		window.alert("Region with this name already exists");
+		window.alert(i18n.t("Region with this name already exists"));
 		return;
 	};
 
 	if (!_mapEditorRegionLngInput.value || !_mapEditorRegionLatInput.value) {
-		window.alert("Please input both lat and lng");
+		window.alert(i18n.t("Please input both lat and lng"));
 		return;
 	};
 
 	var file = _mapEditorImgChooser.files[0];
 	if (!file) {
-		window.alert("Please select a image");
+		window.alert(i18n.t("Please select a image"));
 		return;
 	};
 	

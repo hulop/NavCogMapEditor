@@ -207,7 +207,7 @@ function showNodeInfo(node) {
 		_nodeInfoEditorTransitEnableChecker.addEventListener("change", function(e) {
 			toggleTransitUIToLayer(_currentNode, _layers[_nodeInfoEditorTransitLayerChooser.value], _nodeInfoEditorTransitEnableChecker.checked);
 			if (_nodeInfoEditorTransitNodeChooser.value == _currentNode.id) {
-				window.alert("Current Node Transit to itself");
+				window.alert(i18n.t("Current Node Transit to itself"));
 			};
 		});
 		_nodeInfoEditorTransitNodeChooser.addEventListener("change", function(e) {
@@ -231,7 +231,7 @@ function showNodeInfo(node) {
 			};
 			enableTransit(_currentNode, _layers[targetLayerZ].nodes[targetNodeid]);
 			if (_nodeInfoEditorTransitNodeChooser.value == _currentNode.id) {
-				window.alert("Current Node Transit to itself");
+				window.alert(i18n.t("Current Node Transit to itself"));
 			};
 		})
 		_nodeInfoEditorTransitInfoInput.addEventListener("keyup", function(e) {
@@ -303,7 +303,8 @@ function showNodeInfo(node) {
 		_nodeInfoEditorBuildingChooser.remove(_nodeInfoEditorBuildingChooser.selectedIndex);
 	}
 	var newOpt = document.createElement("option");
-	newOpt.text = "None";
+	newOpt.text = i18n.t("None");
+	newOpt.value = "None";
 	_nodeInfoEditorBuildingChooser.add(newOpt);
 	for (var name in _buildingNames) {
 		addOptionToSelect(_buildingNames[name], _nodeInfoEditorBuildingChooser);

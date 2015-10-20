@@ -9,6 +9,11 @@ var i18n = (function(){
 			"en-US": "en-US"
 	};
 	
+	var languages = {
+			"Japanese": "ja-JP",
+			"English(US)": "en-US"
+	};
+	
 	var loaded = {};
 	
 	function getText(id) {
@@ -28,8 +33,11 @@ var i18n = (function(){
 				async: false,
 				dataType: "json",
 				success: function(data) {
-					loaded[lang] = data
-				}			
+					loaded[lang] = data;
+				},
+				error: function(ajx, error) {
+					console.log(error);
+				}
 			})
 		}
 	}
@@ -39,6 +47,9 @@ var i18n = (function(){
 		if (supported[_lang]) {
 			lang = supported[_lang];
 		} 
+	}
+	function getLanguage() {
+		return lang;
 	}
 	function replaceAlli18nTextInDOM() {
 		
@@ -53,22 +64,28 @@ var i18n = (function(){
 			}
 		}
 		traverse(document.body, function(text) {
-			var tmp = text;
-			while (tmp.match(/(\$\(([^\)]+)\))/) || tmp.match(/(\$\[([^\]]+)\])/)) {
-				var a = RegExp.$1;
-				var b = RegExp.$2;
-				//console.log([a,b,getText(b)]);
-				tmp = tmp.replace(a, getText(b));
-			}
-			return tmp;
+			return replaceAlli18nTextInString(text);
 		});
 	}
-	
+
+	function replaceAlli18nTextInString(tmp) {		
+		while (tmp.match(/(\$\(([^\)]+)\))/) || tmp.match(/(\$\[([^\]]+)\])/)) {
+			var a = RegExp.$1;
+			var b = RegExp.$2;
+			//console.log([a,b,getText(b)]);
+			tmp = tmp.replace(a, getText(b));
+		}
+		return tmp;
+	}
+
 	return {
 		t: getText,
+		convert: replaceAlli18nTextInString,
 		setLanguage: setLanguage,
+		getLanguage: getLanguage,
 		scan: replaceAlli18nTextInDOM,
-		loaded: loaded
+		loaded: loaded,
+		languages: languages
 	};
 	
 })();
@@ -82,6 +99,30 @@ $(document).ready(function() {
 	}
 	i18n.setLanguage(language);
 	i18n.scan();
+
+	var i=0;
+	var selected;
+	for(var lang in i18n.languages) {
+		$opt = $("<option>");
+		$opt.val(i18n.languages[lang]);
+		$opt.text(lang);
+		$("#language_select").append($opt);
+		if ($opt.val() == language) {
+			selected = i;
+		}
+		i++;
+	}
+	$("#language_select")[0].selectedIndex = selected;
+	$("#language_select").change(function(e) {
+		var sel = $("#language_select")[0];
+		var lang = (sel.options[sel.selectedIndex].value);
+		if (window.localStorage) {
+			window.localStorage["LANGUAGE"] = lang;
+		}
+		i18n.setLanguage(lang);
+		window.location.reload();
+	});
+	
 	$(document.body).show();
 });
 

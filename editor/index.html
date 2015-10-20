@@ -29,142 +29,153 @@ SOFTWARE.
     <title>NavCog Manager</title>
     <link rel="stylesheet" type="text/css" href="style.css">
   </head>
-  <body onload="loaded()">
+  <body onload="loaded()" style="display:none">
     <div id="tabs-container">
       <ul class='tabs'>
-        <li onclick="enableFileManager()"><a href='#tab0'>File</a></li>
-        <li onclick="enableMapEditor()"><a href='#tab1'>Map</a></li>
-        <li onclick="enableTopoEditor()"><a href='#tab2'>Topology</a></li>
-        <li onclick="enableBeaconManager()"><a href='#tab3'>Beacons</a></li>
+        <li onclick="enableFileManager()"><a href='#tab0'>$(File)</a></li>
+        <li onclick="enableMapEditor()"><a href='#tab1'>$(Map)</a></li>
+        <li onclick="enableTopoEditor()"><a href='#tab2'>$(Topology)</a></li>
+        <li onclick="enableBeaconManager()"><a href='#tab3'>$(Beacons)</a></li>
       </ul>
       
       <div id='tab0' class="tab" >
           <fieldset>
-            <legend>Import Map Data </legend>
-            <label for="map-data-chooser">Import : </label> <input type="file" id="map-data-chooser" style="width:200px">
+            <legend>$(Import Map Data) </legend>
+            <label for="map-data-chooser">$(Import) : </label> <input type="file" id="map-data-chooser" style="width:200px">
           </fieldset>
           <fieldset>
-            <legend>Export Map Data </legend>
-				<label for="export-data">For App </label> <button type="button" id="export-data" onclick="saveToDowndloadFile()">Save To Download</button><br>
-				<label for="export-geojson">GeoJSON (TBD) </label> <button type="button" id="export-geojson" onclick="saveToDowndloadGeoJSON()" disabled>Save To Download</button>
+            <legend>$(Export Map Data) </legend>
+				<label for="export-data">$(For App) </label> <button type="button" id="export-data" onclick="saveToDowndloadFile()">$(Download)</button><br>
+				<label for="export-geojson">$[GeoJSON (TBD)] </label> <button type="button" id="export-geojson" onclick="saveToDowndloadGeoJSON()" disabled>$(Download)</button>
           </fieldset>
           
           <fieldset>
-            <legend>Save Locally</legend>
+            <legend>$(Save Locally)</legend>
             <div style="text-align:center">
-              <button type="button" onclick="saveLocally()">Save</button>
+              <button type="button" onclick="saveLocally()">$(Save)</button>
             </div>
+          </fieldset>
+          
+          <fieldset>
+          <legend>Language Setting</legend>
+          <select id="language_select">
+          </select>
           </fieldset>
       </div>
 
       <div id='tab1' class="tab">
+      	  <fieldset>
+      	  	<label for="dont-use-map-check">$(Don't use Map)</label> <input type="checkbox" id="dont-use-map-check" onchange="changeDontUseMap()"><br>
+      	  </fieldset>
+      	  
           <fieldset>
-            <legend>Map Layer</legend>
+            <legend>$(Add New Layer)</legend>
             <div style="text-align:left">
-              <label for="dont-use-map-check">Don't use Map</label> <input type="checkbox" id="dont-use-map-check" onchange="changeDontUseMap()"><br>
-              Layer : <select id="map-editor-layer-chooser"></select> / <button type="button" onclick="addNewLayer()">Add Layer</button> With Z-Index: <input type="text" style="width:25px" id="map-editor-layer-input">
+                $(Z-Index): <input type="text" style="width:25px" id="map-editor-layer-input">
+                <button type="button" onclick="addNewLayer()">$(Add Layer)</button>
             </div>
           </fieldset>
           
           <fieldset>
-            <legend>Add New Region To Current Layer</legend>
-            <label for="region-image-chooser">Image File:</label> <input type="file" id="region-image-chooser" style="width:200px"><br>
-            <label for="region-name-input">Region Name:</label> <input type="text" id="region-name-input"><br>
-            Click the map to get Latitude & Longitude<br>
-            <label for="region-center-latitude">Latitude:</label> <input type="text" id="region-center-latitude"><br>
-            <label for="region-center-longitude">Longitude:</label> <input type="text" id="region-center-longitude"><br>
-            <button type="button" id="region-add-new-region" onclick="addNewRegion()">Add New Region</button>
+            <legend>$(Add New Region To Current Layer)</legend>
+            $(Layer) : <select id="map-editor-layer-chooser"></select><br><br>
+            <label for="region-image-chooser">$(Image File):</label> <input type="file" id="region-image-chooser" style="width:200px"><br>
+            <label for="region-name-input">$(Region Name):</label> <input type="text" id="region-name-input"><br>
+            $(Click the map to get Latitude & Longitude)<br>
+            <label for="region-center-latitude">$(Latitude):</label> <input type="text" id="region-center-latitude"><br>
+            <label for="region-center-longitude">$(Longitude):</label> <input type="text" id="region-center-longitude"><br>
+            <button type="button" id="region-add-new-region" onclick="addNewRegion()">$(Add New Region)</button>
           </fieldset>
           
           <fieldset>
-            <legend>Edit Region</legend>
+            <legend>$(Edit Region)</legend>
+            $(Region) : <select id="region-chooser"></select>
             <fieldset style="text-align:center" id="region-position-editor">
-            <legend class="separator">Select Region</legend>
-            Choose Region : <select id="region-chooser"></select>
-            </fieldset>            
-            <fieldset style="text-align:center" id="region-position-editor">
-             <legend class="separator">Coordinates</legend>
-              Move (5m):
+             <legend class="separator">$(Coordinates)</legend>
+              $[Move (5m)]:
               <button type="button" id="region-position-left-large" onclick="regionLeftLarge()">←</button>
               <button type="button" id="region-position-up-large" onclick="regionUpLarge()">↑</button>
               <button type="button" id="region-position-down-large" onclick="regionDownLarge()">↓</button>
               <button type="button" id="region-position-right-large" onclick="regionRightLarge()">→</button><br>
-              Move (0.3m):
+              $[Move (0.3m)]:
               <button type="button" id="region-position-left-small" onclick="regionLeftSmall()">←</button>
               <button type="button" id="region-position-up-small" onclick="regionUpSmall()">↑</button>
               <button type="button" id="region-position-down-small" onclick="regionDownSmall()">↓</button>
               <button type="button" id="region-position-right-small" onclick="regionRightSmall()">→</button>
             </fieldset>
             <fieldset style="text-align:center" id="region-image-ppm-editor">
-            <legend class="separator">Image Size</legend>
-              Large Move:
+            <legend class="separator">$(Image Size)</legend>
+              $(Large Move):
               <button type="button" id="region-image-ppm-up-large" onclick="regionSizeUpLarge()">↑</button>
               <button type="button" id="region-image-ppm-down-large" onclick="regionSizeDownLarge()">↓</button> <br>
-              Small Move:
+              $(Small Move):
               <button type="button" id="region-image-ppm-up-small" onclick="regionSizeUpSmall()">↑</button>
               <button type="button" id="region-image-ppm-down-small" onclick="regionSizeDownSmall()">↓</button>
             </fieldset>
             <fieldset style="text-align:center" id="region-image-rotation-editor">
-            <legend class="separator">Image Rotation</legend>
-              Large Move:
+            <legend class="separator">$(Image Rotation)</legend>
+              $(Large Move):
               <button type="button" id="region-image-rotation-counter-large" onclick="regionCounterLarge()">&#x21ba;</button>
               <button type="button" id="region-image-rotation-clock-large" onclick="regionClockLarge()">&#x21bb;</button> <br>
-              Small Move:
+              $(Small Move):
               <button type="button" id="region-image-rotation-counter-small" onclick="regionCounterSmall()">&#x21ba;</button>
               <button type="button" id="region-image-rotation-clock-small" onclick="regionClockSmall()">&#x21bb;</button>
             </fieldset>
-            <button type="button" onclick="removeCurrentRegion()">delete</button>
+            <button type="button" onclick="removeCurrentRegion()">$(delete)</button>
           </fieldset>
           <fieldset>
-            <legend>Save Locally</legend>
+            <legend>$(Save Locally)</legend>
             <div style="text-align:center">
-              <button type="button" onclick="saveLocally()">Save</button>
+              <button type="button" onclick="saveLocally()">$(Save)</button>
             </div>
           </fieldset>
       </div>
 
       <div id='tab2' class="tab">
           <fieldset>
-            <legend>Choose Layer</legend>
+            <legend>$(Choose Layer)</legend>
             <div style="text-align:center">
-              Choose Layer: <select id="topo-layer-chooser"></select>
+              $(Layer): <select id="topo-layer-chooser"></select>
             </div>
           </fieldset>
           <fieldset>
-	          <legend>Add Node / Edge</legend>
-	          <strong>Node</strong>: Click on the map with holding "A" key<br>
-	          <strong>Edge</strong>: Click on a node and another node with holding "S" key<br>          
+	          <legend>$(Add Node / Edge)</legend>
+	          <strong>$(Node)</strong>: $(Click on the map with holding "A" key)<br>
+	          <strong>$(Edge)</strong>: $(Click on a node and another node with holding "S" key)<br>          
           </fieldset>
           <fieldset>
-            <legend>Add Buildings</legend>
-            <div style="text-align:right">
-              <button type="button" onclick="addNewBuildingName()">Add</button> Building with Name: <input type="text" id="topo-add-building-input" style="width:142px"><br>
-              <button type="button" onclick="removeBuilding()">Delete</button> Buidling: <select style="width:146px" id="topo-building-chooser"></select>
+            <legend>$(Add Buildings)</legend>
+            <div style="text-align:center">
+            $(Building with Name): <input type="text" id="topo-add-building-input" style="width:142px"><br>
+              <button type="button" onclick="addNewBuildingName()">$(Add)</button> <br><br>
+              
+              $(Building): <select style="width:146px" id="topo-building-chooser"></select><br>
+              <button type="button" onclick="removeBuilding()">$(Delete)</button> 
             </div>
           </fieldset>
           <fieldset>
-            <legend>Save Locally</legend>
+            <legend>$(Save Locally)</legend>
             <div style="text-align:center">
-              <button type="button" onclick="saveLocally()">Save</button>
+              <button type="button" onclick="saveLocally()">$(Save)</button>
             </div>
           </fieldset>
       </div>
       
       <div id='tab3' class="tab">
           <fieldset>
-            <legend>Choose Layer</legend>
+            <legend>$(Choose Layer)</legend>
             <div style="text-align:center">
-              Choose Layer: <select id="beacon-info-layer-chooser"></select>
+              $(Layer): <select id="beacon-info-layer-chooser"></select>
             </div>
           </fieldset>          
           <fieldset>
-	          <legend>Add Beacon</legend>
-	          <strong>Beacon</strong>: Click on the map with holding "A" key<br>
+	          <legend>$(Add Beacon)</legend>
+	          <strong>$(Beacon)</strong>: $(Click on the map with holding "A" key)<br>
           </fieldset>          
           <fieldset>
-            <legend>Save Locally</legend>
+            <legend>$(Save Locally)</legend>
             <div style="text-align:center">
-              <button type="button" onclick="saveLocally()">Save</button>
+              <button type="button" onclick="saveLocally()">$(Save)</button>
             </div>
           </fieldset>
       </div>
@@ -176,6 +187,7 @@ SOFTWARE.
     <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=geometry"></script>
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
     <script src="./oss/MarkerWithLabel.js"></script>
+    <script src="./src/i18n.js"></script>
     <script src="./src/TabDriver.js"></script>
     <script src="./src/edgeInfoWinHtmlString.js"></script>
     <script src="./src/nodeInfoWinHtmlString.js"></script>
