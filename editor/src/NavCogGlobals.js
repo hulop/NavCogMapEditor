@@ -37,10 +37,18 @@ var _tmpEdgeNode1 = null;
 var _tmpEdgeNode2 = null;
 
 var _map = null;
-var _edgeInfoWindow = window.google?new google.maps.InfoWindow({content: _edgeInfoWinHtmlString}):null;
-var _nodeInfoWindow =  window.google?new google.maps.InfoWindow({content: _nodeInfoWinHtmlString}):null;
-var _beaconInfoWindow =  window.google?new google.maps.InfoWindow({content: _beaconInfoWinHtmlString}):null;
-
+var _edgeInfoWindow = null;
+var _nodeInfoWindow = null;
+var _beaconInfoWindow = null;
+$(document).ready(function() {
+	_edgeInfoWinHtmlString = i18n.convert(_edgeInfoWinHtmlString);
+	_nodeInfoWinHtmlString = i18n.convert(_nodeInfoWinHtmlString);
+	_beaconInfoWinHtmlString = i18n.convert(_beaconInfoWinHtmlString);
+	
+	_edgeInfoWindow = window.google?new google.maps.InfoWindow({content: _edgeInfoWinHtmlString}):null;
+	_nodeInfoWindow =  window.google?new google.maps.InfoWindow({content: _nodeInfoWinHtmlString}):null;
+	_beaconInfoWindow =  window.google?new google.maps.InfoWindow({content: _beaconInfoWinHtmlString}):null;
+});
 var _maxNodeID = 0;
 var _maxEdgeID = 0;
 var _maxBeaconID = 0;
@@ -146,21 +154,24 @@ _mapDataChooser.addEventListener("change", function(e) {
 			_maxNodeID = _data["maxNodeID"] || 0;
 			_maxEdgeID = _data["maxEdgeID"] || 0;
 			_maxBeaconID = _data["maxBeaconID"] || 0;
-			_layers = _data.layers;
-			_buildingNames = _data.buildings;
+			_layers = _data.layers || {};
+			_buildingNames = _data.buildings || [];
 			_lastUUID = _data["lastUUID"];
 			_lastMajorID = _data["lastMajorID"];
 			_lastMinorID = _data["lastMinorID"];
 
-			while (_topoEditorBuildingChooser.value) {
-				_topoEditorBuildingChooser.remove(_topoEditorBuildingChooser.selectedIndex);
+			while (_topoEditorBuildingChooser.firstChild) {
+				_topoEditorBuildingChoose.remove(_topoEditorBuildingChooser.firstChild);
 			}
-			for (var name in _buildingNames) {
-				addOptionToSelect(_buildingNames[name], _topoEditorBuildingChooser);
-			}
+			//while (_topoEditorBuildingChooser.value) {
+				//_topoEditorBuildingChooser.remove(_topoEditorBuildingChooser.selectedIndex);
+			//}
+			//for (var name in _buildingNames) {
+			//addOptionToSelect(_buildingNames[name], _topoEditorBuildingChooser);
+			//}
 			renewSelectWithProertyOfArray(_layers, "z", _mapEditorLayerChooser)
 			renewSelectWithProertyOfArray(_layers, "z", _topoEditorLayerChooser)
-		        renewSelectWithProertyOfArray(_layers, "z", _beaconEditorLayerChooser)
+		    renewSelectWithProertyOfArray(_layers, "z", _beaconEditorLayerChooser)
 
 			for (var nodeID in _nodeMarkers) {
 				_nodeMarkers[nodeID].setMap(null);
