@@ -7,7 +7,7 @@
 "Import": "インポート",
 "Export Map Data":"地図データのエクスポート",
 "For App":"アプリ用",
-"GeoJSON (TBD)":"GeoJSON (工事中)",
+"GeoJSON":"GeoJSON",
 "Save Locally":"ローカルに保存",
 "Download":"ダウンロード",
 "Save":"保存",
@@ -25,8 +25,8 @@
 "Add New Region": "リージョンを追加",
 "Edit Region": "リージョンの編集",
 "Region": "リージョン",
-"Coordinates": "座標系",
-"Move (5m)":"移動 (5m)",
+"Coordinates": "位置",
+"Move (5.0m)":"移動 (5.0m)",
 "Move (0.3m)":"移動 (0.3m)",
 "Image Size":"画像サイズ",
 "Large Move":"調整（大）",
@@ -38,10 +38,10 @@
 "Node":"ノード",
 "Click on the map with holding \"A\" key":"\"A\"キーを押したまま地図をクリックする",
 "Edge":"エッジ",
-"Click on a node and another node with holding \"S\" key":"\"S\"キーを押したままノードとそれとは別のノードをクリックする",
-"Add Buildings":"建物を追加",
+"Click on a node and another node with holding \"S\" key":"\"S\"キーを押したまま2つのノードをクリックする",
+"Buildings":"建物",
 "Add":"追加",
-"Building with Name":"建物名",
+"Building Name":"建物名",
 "Delete":"削除",
 "Building":"建物",
 "Add Beacon":"ビーコンの追加",
@@ -97,5 +97,11 @@
 "Please input a name for region":"リージョンの名前を入力してください",
 "Region with this name already exists":"同じ名前のリージョンがすでにあります",
 "Please input both lat and lng":"緯度と経度を両方とも入力してください",
-"Please select a image":"画像を選択してください"
+"Please select a image":"画像を選択してください",
+
+"i18n": "国際化",
+"Target Language": "対象言語",
+"Select Language": "言語を選択してください",
+"Base": "標準"
+
 }

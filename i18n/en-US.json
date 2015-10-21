@@ -7,14 +7,14 @@
 "Import": "Import",
 "Export Map Data":"Export Map Data",
 "For App":"For App",
-"GeoJSON (TBD)":"GeoJSON (TBD)",
+"GeoJSON":"GeoJSON",
 "Save Locally":"Save Locally",
 "Download":"Download",
 "Save":"Save",
 "Add New Layer":"Add New Layer",
 "Don't use Map":"Don't use Map",
 "Add Layer":"Add Layer",
-"Z-Index":"With Z-Index",
+"Z-Index":"Z-Index",
 "Layer": "Layer",
 "Add New Region To Current Layer": "Add New Region To Current Layer",
 "Image File": "Image File",
@@ -26,7 +26,7 @@
 "Edit Region": "Edit Region",
 "Region": "Region",
 "Coordinates": "Coordinates",
-"Move (5m)":"Move (5m)",
+"Move (5.0m)":"Move (5.0m)",
 "Move (0.3m)":"Move (0.3m)",
 "Image Size":"Image Size",
 "Large Move":"Large Move",
@@ -39,9 +39,9 @@
 "Click on the map with holding \"A\" key":"Click on the map with holding \"A\" key",
 "Edge":"Edge",
 "Click on a node and another node with holding \"S\" key":"Click on a node and another node with holding \"S\" key",
-"Add Buildings":"Add Buildings",
+"Buildings":"Buildings",
 "Add":"Add",
-"Building with Name":"Building with Name",
+"Building Name":"Building Name",
 "Delete":"Delete",
 "Building":"Building",
 "Add Beacon":"Add Beacon",
@@ -95,6 +95,13 @@
 "Please input a name for region":"Please input a name for region",
 "Region with this name already exists":"Region with this name already exists",
 "Please input both lat and lng":"Please input both latitude and longitude",
-"Please select a image":"Please select a image"
+"Please select a image":"Please select a image",
+
+"i18n": "Internationalization",
+"Target Language": "Target Language",
+"Select Language": "Select Language",
+"Base": "Base"
+
+
 
 }

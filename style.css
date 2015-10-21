@@ -44,18 +44,24 @@ p, h3 {
 }
 
 #tabs-container {
-	height:100%; 
 	position:absolute; 
 	left:0px; 
-	top:0px; 
+	top:30px;
+	bottom:0px;	 
 	width:353px; 
 	border:1px solid black;
 	overflow-y: scroll;
 	overflow-x: hidden;
 }
-
+	
 .tabs {
+	width: 100%;
 	border-bottom: 1px solid gray;
+	position:fixed;
+	height: 30px;
+	left: 0px;
+	top: 0px;
+	background-color: white;
 }
 
 .tabs li {
@@ -82,20 +88,24 @@ p, h3 {
 }
 
 .tab fieldset {
-	margin-bottom: 5px;
+	margin: 0.5em 2px;
+	padding: 0.5em 1em;
+}
+
+.tab fieldset legend {
+	text-align: left;
+	font-weight: bold;
 }
 
 label {
   display: inline-block;
-  width: 100px;
   text-align: right;
+  width: 7em;
 }
+
+
 
 form {
-  padding: 5px;
-}
-
-fieldset {
   padding: 5px;
 }
 
@@ -108,3 +118,23 @@ fieldset {
      border: 0px;
      white-space: nowrap;
    }
+   
+button {
+	padding: 3px 8px;
+}
+
+.addbutton {
+	float: right;
+	margin-left: 1em;
+}
+
+.center {
+	text-align:center;
+}
+
+span.hint {
+	font-size: 80%;
+}
+span.hint::before {
+	content: "*";
+}

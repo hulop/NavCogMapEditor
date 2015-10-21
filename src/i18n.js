@@ -10,8 +10,8 @@ var i18n = (function(){
 	};
 	
 	var languages = {
-			"Japanese": "ja-JP",
-			"English(US)": "en-US"
+			"Japanese 日本語": "ja-JP",
+			"English (US)": "en-US"
 	};
 	
 	var loaded = {};

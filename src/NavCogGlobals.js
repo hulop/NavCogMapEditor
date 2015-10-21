@@ -160,15 +160,18 @@ _mapDataChooser.addEventListener("change", function(e) {
 			_lastMajorID = _data["lastMajorID"];
 			_lastMinorID = _data["lastMinorID"];
 
-			while (_topoEditorBuildingChooser.value) {
-				_topoEditorBuildingChooser.remove(_topoEditorBuildingChooser.selectedIndex);
+			while (_topoEditorBuildingChooser.firstChild) {
+				_topoEditorBuildingChoose.remove(_topoEditorBuildingChooser.firstChild);
 			}
-			for (var name in _buildingNames) {
-				addOptionToSelect(_buildingNames[name], _topoEditorBuildingChooser);
-			}
+			//while (_topoEditorBuildingChooser.value) {
+				//_topoEditorBuildingChooser.remove(_topoEditorBuildingChooser.selectedIndex);
+			//}
+			//for (var name in _buildingNames) {
+			//addOptionToSelect(_buildingNames[name], _topoEditorBuildingChooser);
+			//}
 			renewSelectWithProertyOfArray(_layers, "z", _mapEditorLayerChooser)
 			renewSelectWithProertyOfArray(_layers, "z", _topoEditorLayerChooser)
-		        renewSelectWithProertyOfArray(_layers, "z", _beaconEditorLayerChooser)
+		    renewSelectWithProertyOfArray(_layers, "z", _beaconEditorLayerChooser)
 
 			for (var nodeID in _nodeMarkers) {
 				_nodeMarkers[nodeID].setMap(null);
