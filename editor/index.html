@@ -1,3 +1,7 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset='utf-8'>
 <!--
 The MIT License (MIT)
 
@@ -21,384 +25,379 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 -->
 
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
-    <meta charset='utf-8'>
-    <title>NavCog Manager</title>
-    <link rel="stylesheet" type="text/css" href="style.css">
-  </head>
-  <body onload="loaded()" style="display:none">
-    <ul class='tabs'>
-      <li onclick="enableFileManager()"><a href='#tab0'>$(File)</a></li>
-      <li onclick="enableMapEditor()"><a href='#tab1'>$(Map)</a></li>
-      <li onclick="enableTopoEditor()"><a href='#tab2'>$(Topology)</a></li>
-      <li onclick="enableBeaconManager()"><a href='#tab3'>$(Beacons)</a></li>
-    </ul>
-    
-    <div id="tabs-container">  
-      <div id='tab0' class="tab" >
-          <fieldset class="center">
-            <legend>$(Import Map Data) </legend>
-            <label for="map-data-chooser">$(Import) : </label> <input type="file" id="map-data-chooser" style="width:200px">
-          </fieldset>
-          
-          <fieldset class="center">
-            <legend>$(Export Map Data) </legend>
-				<label for="export-data">$(For App) </label> <button type="button" id="export-data" onclick="saveToDowndloadFile()">$(Download)</button><br><br>
-				<label for="export-geojson">$(GeoJSON) </label> <button type="button" id="export-geojson" onclick="saveToDowndloadGeoJSON()" disabled>$(Download)</button>
-          </fieldset>
-          
-          <fieldset class="center">
-	          <legend>UI Language Setting</legend> <!-- Do not internationalize -->
-    	      <select id="language_select">
-        	  </select>
-          </fieldset>
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+<title>NavCog Manager</title>
+<link rel="stylesheet" type="text/css" href="style.css">
 
-		  <fieldset class="center" style="display:none"">
-		    <legend>$(i18n)</legend>
-		      $(Target Language): 
-		      <select id="i18n_language_selection">
-		        <option>$(Base)</option>
-		      </select>
-		      <button onclick="deleteLanguage()" disabled>$(Delete)</button>
-		      <br><br>
-		      
-		      <select id="i18n_language_list">
-		      <!-- generated from list of ISO639-1 -->
-		      <option value="">$(Select Language)</option>
-		      <option value="ab">Abkhaz (ab)</option>
-<option value="aa">Afar (aa)</option>
-<option value="af">Afrikaans (af)</option>
-<option value="ak">Akan (ak)</option>
-<option value="sq">Albanian (sq)</option>
-<option value="am">Amharic (am)</option>
-<option value="ar">Arabic (ar)</option>
-<option value="an">Aragonese (an)</option>
-<option value="hy">Armenian (hy)</option>
-<option value="as">Assamese (as)</option>
-<option value="av">Avaric (av)</option>
-<option value="ae">Avestan (ae)</option>
-<option value="ay">Aymara (ay)</option>
-<option value="az">Azerbaijani (az)</option>
-<option value="bm">Bambara (bm)</option>
-<option value="ba">Bashkir (ba)</option>
-<option value="eu">Basque (eu)</option>
-<option value="be">Belarusian (be)</option>
-<option value="bn">Bengali (bn)</option>
-<option value="bh">Bihari (bh)</option>
-<option value="bi">Bislama (bi)</option>
-<option value="bs">Bosnian (bs)</option>
-<option value="br">Breton (br)</option>
-<option value="bg">Bulgarian (bg)</option>
-<option value="my">Burmese (my)</option>
-<option value="ca">Catalan (ca)</option>
-<option value="ch">Chamorro (ch)</option>
-<option value="ce">Chechen (ce)</option>
-<option value="ny">Chichewa (ny)</option>
-<option value="zh">Chinese (zh)</option>
-<option value="cv">Chuvash (cv)</option>
-<option value="kw">Cornish (kw)</option>
-<option value="co">Corsican (co)</option>
-<option value="cr">Cree (cr)</option>
-<option value="hr">Croatian (hr)</option>
-<option value="cs">Czech (cs)</option>
-<option value="da">Danish (da)</option>
-<option value="dv">Divehi (dv)</option>
-<option value="nl">Dutch (nl)</option>
-<option value="dz">Dzongkha (dz)</option>
-<option value="en">English (en)</option>
-<option value="eo">Esperanto (eo)</option>
-<option value="et">Estonian (et)</option>
-<option value="ee">Ewe (ee)</option>
-<option value="fo">Faroese (fo)</option>
-<option value="fj">Fijian (fj)</option>
-<option value="fi">Finnish (fi)</option>
-<option value="fr">French (fr)</option>
-<option value="ff">Fula (ff)</option>
-<option value="gl">Galician (gl)</option>
-<option value="ka">Georgian (ka)</option>
-<option value="de">German (de)</option>
-<option value="el">Greek (modern) (el)</option>
-<option value="gn">Guaraní (gn)</option>
-<option value="gu">Gujarati (gu)</option>
-<option value="ht">Haitian (ht)</option>
-<option value="ha">Hausa (ha)</option>
-<option value="he">Hebrew (modern) (he)</option>
-<option value="hz">Herero (hz)</option>
-<option value="hi">Hindi (hi)</option>
-<option value="ho">Hiri Motu (ho)</option>
-<option value="hu">Hungarian (hu)</option>
-<option value="ia">Interlingua (ia)</option>
-<option value="id">Indonesian (id)</option>
-<option value="ie">Interlingue (ie)</option>
-<option value="ga">Irish (ga)</option>
-<option value="ig">Igbo (ig)</option>
-<option value="ik">Inupiaq (ik)</option>
-<option value="io">Ido (io)</option>
-<option value="is">Icelandic (is)</option>
-<option value="it">Italian (it)</option>
-<option value="iu">Inuktitut (iu)</option>
-<option value="ja">Japanese (ja)</option>
-<option value="jv">Javanese (jv)</option>
-<option value="kl">Kalaallisut (kl)</option>
-<option value="kn">Kannada (kn)</option>
-<option value="kr">Kanuri (kr)</option>
-<option value="ks">Kashmiri (ks)</option>
-<option value="kk">Kazakh (kk)</option>
-<option value="km">Khmer (km)</option>
-<option value="ki">Kikuyu (ki)</option>
-<option value="rw">Kinyarwanda (rw)</option>
-<option value="ky">Kyrgyz (ky)</option>
-<option value="kv">Komi (kv)</option>
-<option value="kg">Kongo (kg)</option>
-<option value="ko">Korean (ko)</option>
-<option value="ku">Kurdish (ku)</option>
-<option value="kj">Kwanyama (kj)</option>
-<option value="la">Latin (la)</option>
-<option value="lb">Luxembourgish (lb)</option>
-<option value="lg">Ganda (lg)</option>
-<option value="li">Limburgish (li)</option>
-<option value="ln">Lingala (ln)</option>
-<option value="lo">Lao (lo)</option>
-<option value="lt">Lithuanian (lt)</option>
-<option value="lu">Luba-Katanga (lu)</option>
-<option value="lv">Latvian (lv)</option>
-<option value="gv">Manx (gv)</option>
-<option value="mk">Macedonian (mk)</option>
-<option value="mg">Malagasy (mg)</option>
-<option value="ms">Malay (ms)</option>
-<option value="ml">Malayalam (ml)</option>
-<option value="mt">Maltese (mt)</option>
-<option value="mi">Māori (mi)</option>
-<option value="mr">Marathi (Marāṭhī) (mr)</option>
-<option value="mh">Marshallese (mh)</option>
-<option value="mn">Mongolian (mn)</option>
-<option value="na">Nauru (na)</option>
-<option value="nv">Navajo (nv)</option>
-<option value="nd">Northern Ndebele (nd)</option>
-<option value="ne">Nepali (ne)</option>
-<option value="ng">Ndonga (ng)</option>
-<option value="nb">Norwegian Bokmål (nb)</option>
-<option value="nn">Norwegian Nynorsk (nn)</option>
-<option value="no">Norwegian (no)</option>
-<option value="ii">Nuosu (ii)</option>
-<option value="nr">Southern Ndebele (nr)</option>
-<option value="oc">Occitan (oc)</option>
-<option value="oj">Ojibwe (oj)</option>
-<option value="cu">Old Church Slavonic (cu)</option>
-<option value="om">Oromo (om)</option>
-<option value="or">Oriya (or)</option>
-<option value="os">Ossetian (os)</option>
-<option value="pa">Panjabi (pa)</option>
-<option value="pi">Pāli (pi)</option>
-<option value="fa">Persian (Farsi) (fa)</option>
-<option value="pl">Polish (pl)</option>
-<option value="ps">Pashto (ps)</option>
-<option value="pt">Portuguese (pt)</option>
-<option value="qu">Quechua (qu)</option>
-<option value="rm">Romansh (rm)</option>
-<option value="rn">Kirundi (rn)</option>
-<option value="ro">Romanian (ro)</option>
-<option value="ru">Russian (ru)</option>
-<option value="sa">Sanskrit (Saṁskṛta) (sa)</option>
-<option value="sc">Sardinian (sc)</option>
-<option value="sd">Sindhi (sd)</option>
-<option value="se">Northern Sami (se)</option>
-<option value="sm">Samoan (sm)</option>
-<option value="sg">Sango (sg)</option>
-<option value="sr">Serbian (sr)</option>
-<option value="gd">Scottish Gaelic (gd)</option>
-<option value="sn">Shona (sn)</option>
-<option value="si">Sinhala (si)</option>
-<option value="sk">Slovak (sk)</option>
-<option value="sl">Slovene (sl)</option>
-<option value="so">Somali (so)</option>
-<option value="st">Southern Sotho (st)</option>
-<option value="es">Spanish (es)</option>
-<option value="su">Sundanese (su)</option>
-<option value="sw">Swahili (sw)</option>
-<option value="ss">Swati (ss)</option>
-<option value="sv">Swedish (sv)</option>
-<option value="ta">Tamil (ta)</option>
-<option value="te">Telugu (te)</option>
-<option value="tg">Tajik (tg)</option>
-<option value="th">Thai (th)</option>
-<option value="ti">Tigrinya (ti)</option>
-<option value="bo">Tibetan Standard (bo)</option>
-<option value="tk">Turkmen (tk)</option>
-<option value="tl">Tagalog (tl)</option>
-<option value="tn">Tswana (tn)</option>
-<option value="to">Tonga (Tonga Islands) (to)</option>
-<option value="tr">Turkish (tr)</option>
-<option value="ts">Tsonga (ts)</option>
-<option value="tt">Tatar (tt)</option>
-<option value="tw">Twi (tw)</option>
-<option value="ty">Tahitian (ty)</option>
-<option value="ug">Uyghur (ug)</option>
-<option value="uk">Ukrainian (uk)</option>
-<option value="ur">Urdu (ur)</option>
-<option value="uz">Uzbek (uz)</option>
-<option value="ve">Venda (ve)</option>
-<option value="vi">Vietnamese (vi)</option>
-<option value="vo">Volapük (vo)</option>
-<option value="wa">Walloon (wa)</option>
-<option value="cy">Welsh (cy)</option>
-<option value="wo">Wolof (wo)</option>
-<option value="fy">Western Frisian (fy)</option>
-<option value="xh">Xhosa (xh)</option>
-<option value="yi">Yiddish (yi)</option>
-<option value="yo">Yoruba (yo)</option>
-<option value="za">Zhuang (za)</option>
-<option value="zu">Zulu (zu)</option>
-</select>
-		      <button onclick="addLanguage()">$(Add)</button>
-		  </fieldset>
+<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=geometry"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+<script src="./oss/MarkerWithLabel.js"></script>
+<script src="./src/i18n.js"></script>
+<script src="./src/TabDriver.js"></script>
+<script src="./src/edgeInfoWinHtmlString.js"></script>
+<script src="./src/nodeInfoWinHtmlString.js"></script>
+<script src="./src/beaconInfoWinHtmlString.js"></script>
+<script src="./src/NavCogManager.js"></script>
+<script src="./src/NavDataStructure.js"></script>
+<script src="./src/NavCogMapEditorFunction.js"></script>
+<script src="./src/NavCogRegionFunction.js"></script>
+<script src="./src/NavCogNodeFunction.js"></script>
+<script src="./src/NavCogEdgeFunction.js"></script>
+<script src="./src/NavCogBeaconFunction.js"></script>
+<script src="./src/NavCogGlobals.js"></script>
+</head>
 
-          <fieldset class="center">
-            <legend>$(Save Locally)</legend>
-            <button type="button" onclick="saveLocally()">$(Save)</button>
-          </fieldset>
-          
-      </div>
+<body onload="loaded()" style="display: none">
+	<ul class='tabs'>
+		<li onclick="enableFileManager()"><a href='#tab0'>$(File)</a></li>
+		<li onclick="enableMapEditor()"><a href='#tab1'>$(Map)</a></li>
+		<li onclick="enableTopoEditor()"><a href='#tab2'>$(Topology)</a></li>
+		<li onclick="enableBeaconManager()"><a href='#tab3'>$(Beacons)</a></li>
+	</ul>
 
-      <div id='tab1' class="tab">
-      	  <fieldset class="center">
-      	  	<label for="dont-use-map-check">$(Don't use Map)</label> <input type="checkbox" id="dont-use-map-check" onchange="changeDontUseMap()"><br>
-      	  </fieldset>
-      	  
-          <fieldset class="center">
-            <legend>$(Add New Layer)</legend>
-            <div style="text-align:left">
-                $(Z-Index): <input type="text" style="width:25px" id="map-editor-layer-input">
-                <button class="addbutton" type="button" onclick="addNewLayer()">$(Add Layer)</button>
-            </div>
-          </fieldset>
-          
-          <fieldset>
-            <legend>$(Add New Region To Current Layer)</legend>
-            $(Layer) : <select id="map-editor-layer-chooser"></select><br><br>
-            <label for="region-image-chooser">$(Image File):</label> <input type="file" id="region-image-chooser" style="width:200px"><br>
-            <label for="region-name-input">$(Region Name):</label> <input type="text" id="region-name-input"><br>
-            <label for="region-center-latitude">$(Latitude):</label> <input type="text" id="region-center-latitude"><br>
-            <label for="region-center-longitude">$(Longitude):</label> <input type="text" id="region-center-longitude"><br>
-            <span class="hint">$(Click the map to get Latitude & Longitude)</span><br>
-            <button class="addbutton" type="button" id="region-add-new-region" onclick="addNewRegion()">$(Add New Region)</button>
-          </fieldset>
-          
-          <fieldset>
-            <legend>$(Edit Region)</legend>
-            $(Region) : <select id="region-chooser"></select>
-            <button class="addbutton" type="button" onclick="removeCurrentRegion()">$(delete)</button>            
-            <fieldset style="text-align:center" id="region-position-editor">
-             <legend class="separator">$(Coordinates)</legend>
-              $[Move (5.0m)]:
-              <button type="button" id="region-position-left-large" onclick="regionLeftLarge()">←</button>
-              <button type="button" id="region-position-up-large" onclick="regionUpLarge()">↑</button>
-              <button type="button" id="region-position-down-large" onclick="regionDownLarge()">↓</button>
-              <button type="button" id="region-position-right-large" onclick="regionRightLarge()">→</button><br>
-              $[Move (0.3m)]:
-              <button type="button" id="region-position-left-small" onclick="regionLeftSmall()">←</button>
-              <button type="button" id="region-position-up-small" onclick="regionUpSmall()">↑</button>
-              <button type="button" id="region-position-down-small" onclick="regionDownSmall()">↓</button>
-              <button type="button" id="region-position-right-small" onclick="regionRightSmall()">→</button>
-            </fieldset>
-            <fieldset style="text-align:center" id="region-image-ppm-editor">
-            <legend class="separator">$(Image Size)</legend>
-              $(Large Move):
-              <button type="button" id="region-image-ppm-up-large" onclick="regionSizeUpLarge()">↑</button>
-              <button type="button" id="region-image-ppm-down-large" onclick="regionSizeDownLarge()">↓</button><br>
-              $(Small Move):
-              <button type="button" id="region-image-ppm-up-small" onclick="regionSizeUpSmall()">↑</button>
-              <button type="button" id="region-image-ppm-down-small" onclick="regionSizeDownSmall()">↓</button>
-            </fieldset>
-            <fieldset style="text-align:center" id="region-image-rotation-editor">
-            <legend class="separator">$(Image Rotation)</legend>
-              $(Large Move):
-              <button type="button" id="region-image-rotation-counter-large" onclick="regionCounterLarge()">&#x21ba;</button>
-              <button type="button" id="region-image-rotation-clock-large" onclick="regionClockLarge()">&#x21bb;</button><br>
-              $(Small Move):
-              <button type="button" id="region-image-rotation-counter-small" onclick="regionCounterSmall()">&#x21ba;</button>
-              <button type="button" id="region-image-rotation-clock-small" onclick="regionClockSmall()">&#x21bb;</button>
-            </fieldset>
-          </fieldset>
-          <fieldset>
-            <legend>$(Save Locally)</legend>
-            <div style="text-align:center">
-              <button type="button" onclick="saveLocally()">$(Save)</button>
-            </div>
-          </fieldset>
-      </div>
+	<div id="tabs-container">
+		<div id='tab0' class="tab">
+			<fieldset class="center">
+				<legend>$(Import Map Data) </legend>
+				<label for="map-data-chooser">$(Import) : </label> <input type="file" id="map-data-chooser" style="width: 200px">
+			</fieldset>
 
-      <div id='tab2' class="tab">
-          <fieldset>
-            <legend>$(Choose Layer)</legend>
-            <div style="text-align:center">
-              $(Layer): <select id="topo-layer-chooser"></select>
-            </div>
-          </fieldset>
-          <fieldset>
-	          <legend>$(Add Node / Edge)</legend>
-	          <strong>$(Node)</strong>: $(Click on the map with holding "A" key)<br>
-	          <strong>$(Edge)</strong>: $(Click on a node and another node with holding "S" key)<br>          
-          </fieldset>
-          <fieldset>
-            <legend>$(Buildings)</legend>
-            <div style="text-align:center">
-            $(Building Name): <input type="text" id="topo-add-building-input" style="width:142px">
-              <button type="button" onclick="addNewBuildingName()">$(Add)</button> <br><br>
-              
-              $(Building): <select style="width:146px" id="topo-building-chooser"></select>
-              <button type="button" onclick="removeBuilding()">$(Delete)</button> 
-            </div>
-          </fieldset>
-          <fieldset>
-            <legend>$(Save Locally)</legend>
-            <div style="text-align:center">
-              <button type="button" onclick="saveLocally()">$(Save)</button>
-            </div>
-          </fieldset>
-      </div>
-      
-      <div id='tab3' class="tab">
-          <fieldset>
-            <legend>$(Choose Layer)</legend>
-            <div style="text-align:center">
-              $(Layer): <select id="beacon-info-layer-chooser"></select>
-            </div>
-          </fieldset>          
-          <fieldset>
-	          <legend>$(Add Beacon)</legend>
-	          <strong>$(Beacon)</strong>: $(Click on the map with holding "A" key)<br>
-          </fieldset>          
-          <fieldset>
-            <legend>$(Save Locally)</legend>
-            <div style="text-align:center">
-              <button type="button" onclick="saveLocally()">$(Save)</button>
-            </div>
-          </fieldset>
-      </div>
-    </div>
+			<fieldset class="center">
+				<legend>$(Export Map Data) </legend>
+				<label for="export-data">$(For App) </label>
+				<button type="button" id="export-data" onclick="saveToDowndloadFile()">$(Download)</button>
+				<br> <br> <label for="export-geojson">$(GeoJSON) </label>
+				<button type="button" id="export-geojson" onclick="saveToDowndloadGeoJSON()" disabled>$(Download)</button>
+			</fieldset>
 
-    <div id="google-map-view" style="height:100%; margin:px; padding:0px; margin-left:355px">
-    </div>
+			<fieldset class="center">
+				<legend>UI Language Setting</legend>
+				<!-- Do not internationalize -->
+				<select id="language_select">
+				</select>
+			</fieldset>
 
-    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=geometry"></script>
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
-    <script src="./oss/MarkerWithLabel.js"></script>
-    <script src="./src/i18n.js"></script>
-    <script src="./src/TabDriver.js"></script>
-    <script src="./src/edgeInfoWinHtmlString.js"></script>
-    <script src="./src/nodeInfoWinHtmlString.js"></script>
-    <script src="./src/beaconInfoWinHtmlString.js"></script>
-    <script src="./src/NavCogGlobals.js"></script>
-    <script src="./src/NavCogManager.js"></script>
-    <script src="./src/NavDataStructure.js"></script>
-    <script src="./src/NavCogMapEditorFunction.js"></script>
-    <script src="./src/NavCogRegionFunction.js"></script>
-    <script src="./src/NavCogNodeFunction.js"></script>
-    <script src="./src/NavCogEdgeFunction.js"></script>
-    <script src="./src/NavCogBeaconFunction.js"></script>
-  </body>
+			<fieldset class="center" style="display: none">
+				<legend>$(i18n)</legend>
+				$(Target Language): <select id="i18n_language_selection">
+					<option>$(Base)</option>
+				</select>
+				<button onclick="deleteLanguage()" disabled>$(Delete)</button>
+				<br> <br> <select id="i18n_language_list">
+					<!-- generated from list of ISO639-1 -->
+					<option value="">$(Select Language)</option>
+					<option value="ab">Abkhaz (ab)</option>
+					<option value="aa">Afar (aa)</option>
+					<option value="af">Afrikaans (af)</option>
+					<option value="ak">Akan (ak)</option>
+					<option value="sq">Albanian (sq)</option>
+					<option value="am">Amharic (am)</option>
+					<option value="ar">Arabic (ar)</option>
+					<option value="an">Aragonese (an)</option>
+					<option value="hy">Armenian (hy)</option>
+					<option value="as">Assamese (as)</option>
+					<option value="av">Avaric (av)</option>
+					<option value="ae">Avestan (ae)</option>
+					<option value="ay">Aymara (ay)</option>
+					<option value="az">Azerbaijani (az)</option>
+					<option value="bm">Bambara (bm)</option>
+					<option value="ba">Bashkir (ba)</option>
+					<option value="eu">Basque (eu)</option>
+					<option value="be">Belarusian (be)</option>
+					<option value="bn">Bengali (bn)</option>
+					<option value="bh">Bihari (bh)</option>
+					<option value="bi">Bislama (bi)</option>
+					<option value="bs">Bosnian (bs)</option>
+					<option value="br">Breton (br)</option>
+					<option value="bg">Bulgarian (bg)</option>
+					<option value="my">Burmese (my)</option>
+					<option value="ca">Catalan (ca)</option>
+					<option value="ch">Chamorro (ch)</option>
+					<option value="ce">Chechen (ce)</option>
+					<option value="ny">Chichewa (ny)</option>
+					<option value="zh">Chinese (zh)</option>
+					<option value="cv">Chuvash (cv)</option>
+					<option value="kw">Cornish (kw)</option>
+					<option value="co">Corsican (co)</option>
+					<option value="cr">Cree (cr)</option>
+					<option value="hr">Croatian (hr)</option>
+					<option value="cs">Czech (cs)</option>
+					<option value="da">Danish (da)</option>
+					<option value="dv">Divehi (dv)</option>
+					<option value="nl">Dutch (nl)</option>
+					<option value="dz">Dzongkha (dz)</option>
+					<option value="en">English (en)</option>
+					<option value="eo">Esperanto (eo)</option>
+					<option value="et">Estonian (et)</option>
+					<option value="ee">Ewe (ee)</option>
+					<option value="fo">Faroese (fo)</option>
+					<option value="fj">Fijian (fj)</option>
+					<option value="fi">Finnish (fi)</option>
+					<option value="fr">French (fr)</option>
+					<option value="ff">Fula (ff)</option>
+					<option value="gl">Galician (gl)</option>
+					<option value="ka">Georgian (ka)</option>
+					<option value="de">German (de)</option>
+					<option value="el">Greek (modern) (el)</option>
+					<option value="gn">Guaraní (gn)</option>
+					<option value="gu">Gujarati (gu)</option>
+					<option value="ht">Haitian (ht)</option>
+					<option value="ha">Hausa (ha)</option>
+					<option value="he">Hebrew (modern) (he)</option>
+					<option value="hz">Herero (hz)</option>
+					<option value="hi">Hindi (hi)</option>
+					<option value="ho">Hiri Motu (ho)</option>
+					<option value="hu">Hungarian (hu)</option>
+					<option value="ia">Interlingua (ia)</option>
+					<option value="id">Indonesian (id)</option>
+					<option value="ie">Interlingue (ie)</option>
+					<option value="ga">Irish (ga)</option>
+					<option value="ig">Igbo (ig)</option>
+					<option value="ik">Inupiaq (ik)</option>
+					<option value="io">Ido (io)</option>
+					<option value="is">Icelandic (is)</option>
+					<option value="it">Italian (it)</option>
+					<option value="iu">Inuktitut (iu)</option>
+					<option value="ja">Japanese (ja)</option>
+					<option value="jv">Javanese (jv)</option>
+					<option value="kl">Kalaallisut (kl)</option>
+					<option value="kn">Kannada (kn)</option>
+					<option value="kr">Kanuri (kr)</option>
+					<option value="ks">Kashmiri (ks)</option>
+					<option value="kk">Kazakh (kk)</option>
+					<option value="km">Khmer (km)</option>
+					<option value="ki">Kikuyu (ki)</option>
+					<option value="rw">Kinyarwanda (rw)</option>
+					<option value="ky">Kyrgyz (ky)</option>
+					<option value="kv">Komi (kv)</option>
+					<option value="kg">Kongo (kg)</option>
+					<option value="ko">Korean (ko)</option>
+					<option value="ku">Kurdish (ku)</option>
+					<option value="kj">Kwanyama (kj)</option>
+					<option value="la">Latin (la)</option>
+					<option value="lb">Luxembourgish (lb)</option>
+					<option value="lg">Ganda (lg)</option>
+					<option value="li">Limburgish (li)</option>
+					<option value="ln">Lingala (ln)</option>
+					<option value="lo">Lao (lo)</option>
+					<option value="lt">Lithuanian (lt)</option>
+					<option value="lu">Luba-Katanga (lu)</option>
+					<option value="lv">Latvian (lv)</option>
+					<option value="gv">Manx (gv)</option>
+					<option value="mk">Macedonian (mk)</option>
+					<option value="mg">Malagasy (mg)</option>
+					<option value="ms">Malay (ms)</option>
+					<option value="ml">Malayalam (ml)</option>
+					<option value="mt">Maltese (mt)</option>
+					<option value="mi">Māori (mi)</option>
+					<option value="mr">Marathi (Marāṭhī) (mr)</option>
+					<option value="mh">Marshallese (mh)</option>
+					<option value="mn">Mongolian (mn)</option>
+					<option value="na">Nauru (na)</option>
+					<option value="nv">Navajo (nv)</option>
+					<option value="nd">Northern Ndebele (nd)</option>
+					<option value="ne">Nepali (ne)</option>
+					<option value="ng">Ndonga (ng)</option>
+					<option value="nb">Norwegian Bokmål (nb)</option>
+					<option value="nn">Norwegian Nynorsk (nn)</option>
+					<option value="no">Norwegian (no)</option>
+					<option value="ii">Nuosu (ii)</option>
+					<option value="nr">Southern Ndebele (nr)</option>
+					<option value="oc">Occitan (oc)</option>
+					<option value="oj">Ojibwe (oj)</option>
+					<option value="cu">Old Church Slavonic (cu)</option>
+					<option value="om">Oromo (om)</option>
+					<option value="or">Oriya (or)</option>
+					<option value="os">Ossetian (os)</option>
+					<option value="pa">Panjabi (pa)</option>
+					<option value="pi">Pāli (pi)</option>
+					<option value="fa">Persian (Farsi) (fa)</option>
+					<option value="pl">Polish (pl)</option>
+					<option value="ps">Pashto (ps)</option>
+					<option value="pt">Portuguese (pt)</option>
+					<option value="qu">Quechua (qu)</option>
+					<option value="rm">Romansh (rm)</option>
+					<option value="rn">Kirundi (rn)</option>
+					<option value="ro">Romanian (ro)</option>
+					<option value="ru">Russian (ru)</option>
+					<option value="sa">Sanskrit (Saṁskṛta) (sa)</option>
+					<option value="sc">Sardinian (sc)</option>
+					<option value="sd">Sindhi (sd)</option>
+					<option value="se">Northern Sami (se)</option>
+					<option value="sm">Samoan (sm)</option>
+					<option value="sg">Sango (sg)</option>
+					<option value="sr">Serbian (sr)</option>
+					<option value="gd">Scottish Gaelic (gd)</option>
+					<option value="sn">Shona (sn)</option>
+					<option value="si">Sinhala (si)</option>
+					<option value="sk">Slovak (sk)</option>
+					<option value="sl">Slovene (sl)</option>
+					<option value="so">Somali (so)</option>
+					<option value="st">Southern Sotho (st)</option>
+					<option value="es">Spanish (es)</option>
+					<option value="su">Sundanese (su)</option>
+					<option value="sw">Swahili (sw)</option>
+					<option value="ss">Swati (ss)</option>
+					<option value="sv">Swedish (sv)</option>
+					<option value="ta">Tamil (ta)</option>
+					<option value="te">Telugu (te)</option>
+					<option value="tg">Tajik (tg)</option>
+					<option value="th">Thai (th)</option>
+					<option value="ti">Tigrinya (ti)</option>
+					<option value="bo">Tibetan Standard (bo)</option>
+					<option value="tk">Turkmen (tk)</option>
+					<option value="tl">Tagalog (tl)</option>
+					<option value="tn">Tswana (tn)</option>
+					<option value="to">Tonga (Tonga Islands) (to)</option>
+					<option value="tr">Turkish (tr)</option>
+					<option value="ts">Tsonga (ts)</option>
+					<option value="tt">Tatar (tt)</option>
+					<option value="tw">Twi (tw)</option>
+					<option value="ty">Tahitian (ty)</option>
+					<option value="ug">Uyghur (ug)</option>
+					<option value="uk">Ukrainian (uk)</option>
+					<option value="ur">Urdu (ur)</option>
+					<option value="uz">Uzbek (uz)</option>
+					<option value="ve">Venda (ve)</option>
+					<option value="vi">Vietnamese (vi)</option>
+					<option value="vo">Volapük (vo)</option>
+					<option value="wa">Walloon (wa)</option>
+					<option value="cy">Welsh (cy)</option>
+					<option value="wo">Wolof (wo)</option>
+					<option value="fy">Western Frisian (fy)</option>
+					<option value="xh">Xhosa (xh)</option>
+					<option value="yi">Yiddish (yi)</option>
+					<option value="yo">Yoruba (yo)</option>
+					<option value="za">Zhuang (za)</option>
+					<option value="zu">Zulu (zu)</option>
+				</select>
+				<button onclick="addLanguage()">$(Add)</button>
+			</fieldset>
+
+			<fieldset class="center">
+				<legend>$(Save Locally)</legend>
+				<button type="button" onclick="saveLocally()">$(Save)</button>
+			</fieldset>
+
+		</div>
+
+		<div id='tab1' class="tab">
+			<fieldset class="center">
+				<label for="dont-use-map-check">$(Don't use Map)</label> <input type="checkbox" id="dont-use-map-check" onchange="changeDontUseMap()"><br>
+			</fieldset>
+
+			<fieldset>
+				<legend>$(Add New Layer)</legend>
+				$(Z-Index): <input type="text" style="width: 25px" id="map-editor-layer-input">
+				<button class="addbutton" type="button" onclick="addNewLayer()">$(Add Layer)</button>
+			</fieldset>
+
+			<fieldset>
+				<legend>$(Add New Region To Current Layer)</legend>
+				$(Layer) : <select id="map-editor-layer-chooser"></select><br> <br> <label for="region-image-chooser">$(Image File):</label> <input
+					type="file" id="region-image-chooser"><br> <label for="region-name-input">$(Region Name):</label> <input type="text"
+					id="region-name-input"><br> <label for="region-center-latitude">$(Latitude):</label> <input type="text"
+					id="region-center-latitude"><br> <label for="region-center-longitude">$(Longitude):</label> <input type="text"
+					id="region-center-longitude"><br> <span class="hint">$(Click the map to get Latitude & Longitude)</span><br>
+				<button class="addbutton" type="button" id="region-add-new-region" onclick="addNewRegion()">$(Add New Region)</button>
+			</fieldset>
+
+			<fieldset>
+				<legend>$(Edit Region)</legend>
+				$(Region) : <select id="region-chooser"></select>
+				<button class="addbutton" type="button" onclick="removeCurrentRegion()">$(delete)</button>
+				<fieldset class="center" id="region-position-editor">
+					<legend class="separator">$(Coordinates)</legend>
+					$[Move (5.0m)]:
+					<button type="button" id="region-position-left-large" onclick="regionLeftLarge()">←</button>
+					<button type="button" id="region-position-up-large" onclick="regionUpLarge()">↑</button>
+					<button type="button" id="region-position-down-large" onclick="regionDownLarge()">↓</button>
+					<button type="button" id="region-position-right-large" onclick="regionRightLarge()">→</button>
+					<br> $[Move (0.3m)]:
+					<button type="button" id="region-position-left-small" onclick="regionLeftSmall()">←</button>
+					<button type="button" id="region-position-up-small" onclick="regionUpSmall()">↑</button>
+					<button type="button" id="region-position-down-small" onclick="regionDownSmall()">↓</button>
+					<button type="button" id="region-position-right-small" onclick="regionRightSmall()">→</button>
+				</fieldset>
+				<fieldset class="center" id="region-image-ppm-editor">
+					<legend class="separator">$(Image Size)</legend>
+					$(Large Move):
+					<button type="button" id="region-image-ppm-up-large" onclick="regionSizeUpLarge()">↑</button>
+					<button type="button" id="region-image-ppm-down-large" onclick="regionSizeDownLarge()">↓</button>
+					<br> $(Small Move):
+					<button type="button" id="region-image-ppm-up-small" onclick="regionSizeUpSmall()">↑</button>
+					<button type="button" id="region-image-ppm-down-small" onclick="regionSizeDownSmall()">↓</button>
+				</fieldset>
+				<fieldset class="center" id="region-image-rotation-editor">
+					<legend class="separator">$(Image Rotation)</legend>
+					$(Large Move):
+					<button type="button" id="region-image-rotation-counter-large" onclick="regionCounterLarge()">&#x21ba;</button>
+					<button type="button" id="region-image-rotation-clock-large" onclick="regionClockLarge()">&#x21bb;</button>
+					<br> $(Small Move):
+					<button type="button" id="region-image-rotation-counter-small" onclick="regionCounterSmall()">&#x21ba;</button>
+					<button type="button" id="region-image-rotation-clock-small" onclick="regionClockSmall()">&#x21bb;</button>
+				</fieldset>
+			</fieldset>
+			<fieldset>
+				<legend>$(Save Locally)</legend>
+				<div style="text-align: center">
+					<button type="button" onclick="saveLocally()">$(Save)</button>
+				</div>
+			</fieldset>
+		</div>
+
+		<div id='tab2' class="tab">
+			<fieldset class="center">
+				<legend>$(Choose Layer)</legend>
+				$(Layer): <select id="topo-layer-chooser"></select>
+			</fieldset>
+
+			<fieldset>
+				<legend>$(Add Node / Edge)</legend>
+				<strong>$(Node)</strong>: $(Click on the map with holding "A" key)<br>
+				<strong>$(Edge)</strong>: $(Click on a node and another node with holding "S" key)<br>
+			</fieldset>
+
+			<fieldset class="center">
+				<legend>$(Buildings)</legend>
+				$(Building Name): <input type="text" id="topo-add-building-input" style="width: 142px">
+				<button type="button" onclick="addNewBuildingName()">$(Add)</button>
+				<br> <br> 
+				$(Building): <select style="width: 146px" id="topo-building-chooser"></select>
+				<button type="button" onclick="removeBuilding()">$(Delete)</button>
+			</fieldset>
+
+			<fieldset>
+				<legend>$(Save Locally)</legend>
+				<div style="text-align: center">
+					<button type="button" onclick="saveLocally()">$(Save)</button>
+				</div>
+			</fieldset>
+		</div>
+
+		<div id='tab3' class="tab">
+			<fieldset class="center">
+				<legend>$(Choose Layer)</legend>
+				<div>
+					$(Layer): <select id="beacon-info-layer-chooser"></select>
+				</div>
+			</fieldset>
+
+			<fieldset>
+				<legend>$(Add Beacon)</legend>
+				<strong>$(Beacon)</strong>: $(Click on the map with holding "A" key)<br>
+			</fieldset>
+
+			<fieldset class="center">
+				<legend>$(Save Locally)</legend>
+				<div>
+					<button type="button" onclick="saveLocally()">$(Save)</button>
+				</div>
+			</fieldset>
+		</div>
+	</div>
+
+	<div id="google-map-view" style="height: 100%; margin: px; padding: 0px; margin-left: 355px"></div>
+
+</body>
 </html>

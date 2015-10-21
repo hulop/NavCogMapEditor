@@ -138,3 +138,7 @@ span.hint {
 span.hint::before {
 	content: "*";
 }
+
+input[type=file] {
+	width: 200px;
+}
