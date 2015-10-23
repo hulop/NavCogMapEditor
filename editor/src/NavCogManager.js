@@ -20,11 +20,19 @@
  * THE SOFTWARE.
  *******************************************************************************/
  
+$db.on("dbopen", function(e) {
+	$db.getData(function(data) {
+		_data = data;
+		$editor.trigger("dataLoaded");
+		$(window).trigger("hashchange");
+	});
+});
+
  function loaded() {
+	 return; // deprecated
 	reloadData();
 	initMapEvent();
 	initKeyboardEvent();
-	$(window).trigger("hashchange");
 }
 
 function reloadData() {
@@ -35,6 +43,7 @@ function reloadData() {
 	    _data = JSON.parse(strData);
 	}
 	$editor.trigger("dataLoaded");
+	$(window).trigger("hashchange");
 }	
 
 $editor.on("dataLoaded", function() {
@@ -347,7 +356,8 @@ function prepareData() {
 
 function saveLocally() {
 	prepareData();
-	localStorage.setItem(_dataStorageLabel, JSON.stringify(_data));
+	//localStorage.setItem(_dataStorageLabel, JSON.stringify(_data));
+	$db.saveData(_data);
 }
 
 function saveToDowndloadFile() {
