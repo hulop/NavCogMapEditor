@@ -1,4 +1,4 @@
-$i18n = (function(){
+$i18n = (function() {
 	var ALL_LANGUAGES = {
 		"ab" : "Abkhaz",
 		"aa" : "Afar",
@@ -185,70 +185,72 @@ $i18n = (function(){
 		"za" : "Zhuang",
 		"zu" : "Zulu"
 	}
-	
-	var lang = "en-US"; //default
+
+	var lang = "en-US"; // default
 
 	var supported = {}
 	var languages = {}
 	function addSupportedLanguage(lang, name, url, extra_codes) {
 		supported[lang] = lang;
-		$(extra_codes).each(function(e){supported[e]=lang;});
-		
+		$(extra_codes).each(function(e) {
+			supported[e] = lang;
+		});
+
 		languages[lang] = {
-				name: name,
-				url: url
+			name : name,
+			url : url
 		};
 	}
 	function getLanguages() {
 		var ret = {};
-		for(var key in languages) {
+		for ( var key in languages) {
 			ret[key] = languages[key].name;
 		}
 		return ret;
 	}
-	
+
 	var loaded = {};
-	
+
 	function getText(id) {
 		var data = loaded[lang];
-		
+
 		if (data && data[id]) {
 			return data[id];
 		}
-		return "__"+id+"__";
+		return "__" + id + "__";
 	}
-	
+
 	function setUILanguage(_lang) {
-		console.log("set language "+_lang);
+		console.log("set language " + _lang);
 		if (supported[_lang]) {
 			lang = supported[_lang];
-		} 
+		}
 		if (!loaded[_lang]) {
 			$.ajax({
-				url: languages[_lang].url, //"./i18n/"+_lang+".json",
-				async: true,
-				dataType: "json",
-				success: function(data) {
+				url : languages[_lang].url, // "./i18n/"+_lang+".json",
+				async : true,
+				dataType : "json",
+				success : function(data) {
 					loaded[_lang] = data;
 					$i18n.trigger("initialized", _lang);
 				},
-				error: function(ajx, error) {
+				error : function(ajx, error) {
 					console.log(error);
 				}
 			})
 		}
 	}
-	
+
 	function getUILanguage() {
 		return lang;
 	}
-	
+
 	var codes = {};
 	var code = "";
 	function setLanguageCode(_code) {
 		code = _code;
 	}
-	
+
 	function getLanguageCode() {
 		return code;
 	}
@@ -258,26 +260,26 @@ $i18n = (function(){
 		}
 		return code;
 	}
-	
+
 	function getLanguageCodes() {
 		return codes;
 	}
-	
+
 	function addLanguageCode(code, name) {
 		codes[code] = name;
 	}
-	
+
 	function deleteLanguageCode(code) {
 		delete codes[code];
 	}
-	
+
 	function replaceAlli18nTextInDOM() {
 		function traverse(el, replace) {
 			if (el.nodeType == 3) {
-				el.nodeValue = replace(el.nodeValue);				
-			} 
+				el.nodeValue = replace(el.nodeValue);
+			}
 			if (el.nodeType == 1) {
-				for(var i = 0; i < el.childNodes.length; i++) {
+				for (var i = 0; i < el.childNodes.length; i++) {
 					traverse(el.childNodes[i], replace);
 				}
 			}
@@ -287,73 +289,177 @@ $i18n = (function(){
 		});
 	}
 
-	function replaceAlli18nTextInString(tmp) {		
+	function replaceAlli18nTextInString(tmp) {
 		while (tmp.match(/(\$\(([^\)]+)\))/) || tmp.match(/(\$\[([^\]]+)\])/)) {
 			var a = RegExp.$1;
 			var b = RegExp.$2;
-			//console.log([a,b,getText(b)]);
+			// console.log([a,b,getText(b)]);
 			tmp = tmp.replace(a, getText(b));
 		}
 		return tmp;
 	}
-	
+
 	function getKeyCode(key, code) {
 		code = code || this.getLanguageCode();
-		return key + ((code=="")?"":":"+code);
+		return key + ((code == "") ? "" : ":" + code);
 	}
 	return $({}).extend({
-		addSupportedLanguage:addSupportedLanguage,
-		ALL_LANGUAGES: ALL_LANGUAGES,
-		getText: getText,
-		t: getText,
-		convert: replaceAlli18nTextInString,
-		getLanguages: getLanguages,
-		setUILanguage: setUILanguage,
-		scan: replaceAlli18nTextInDOM,
-		
-		addLanguageCode: addLanguageCode,
-		deleteLanguageCode: deleteLanguageCode,
-		setLanguageCode: setLanguageCode,
-		getLanguageCode: getLanguageCode,
-		getLanguageCodes: getLanguageCodes,
-		getLanguageCodeString: getLanguageCodeString,
-		
-		getKeyCode: getKeyCode,
-		k: getKeyCode
+		addSupportedLanguage : addSupportedLanguage,
+		ALL_LANGUAGES : ALL_LANGUAGES,
+		getText : getText,
+		t : getText,
+		convert : replaceAlli18nTextInString,
+		getLanguages : getLanguages,
+		setUILanguage : setUILanguage,
+		scan : replaceAlli18nTextInDOM,
+
+		addLanguageCode : addLanguageCode,
+		deleteLanguageCode : deleteLanguageCode,
+		setLanguageCode : setLanguageCode,
+		getLanguageCode : getLanguageCode,
+		getLanguageCodes : getLanguageCodes,
+		getLanguageCodeString : getLanguageCodeString,
+
+		getKeyCode : getKeyCode,
+		k : getKeyCode
 	});
-	
+
 })();
 
 $util = $({}).extend({
-		getSelectedOption: function(select_id) {
-		    var select = document.getElementById(select_id);
-		    var selected = select.options[select.selectedIndex];
-		    return selected;
-		},
-		setOptions: function(id, keyValues, select, kfunc, vfunc) {
-			var $sel = (id.constructor == String)?$("#"+id):$(id);
-			var kfunc = kfunc || function(i){return i};
-			var vfunc = vfunc || function(i){return i};
-			$sel.empty();
-			for(var key in keyValues) {
-				var $opt = $("<option>").val(kfunc(key)).text(vfunc(keyValues[key])).attr("selected", select==key);
-				$sel.append($opt);
-			}
-		},
-		renewSelectWithProertyOfArray: function(array, property, chooser, select) {
-			this.setOptions(chooser, array, select, function(k){return array[k][property]}, function(v){return v[property]});
-		},
-		
-		getLangAttrs: function(hash, key, code) {
-			code = code || $i18n.getLanguageCode();
-			var ret = {};
-			for(var k in hash) {
-				ret[k] = this.getLangAttr(hash[k], key, code);
-			}
-			return ret;
-		},
-		getLangAttr: function(obj, key, code) {
-			code = code || $i18n.getLanguageCode();
-			return obj[$i18n.getKeyCode(key,code)];
+	getSelectedOption : function(select_id) {
+		var select = document.getElementById(select_id);
+		var selected = select.options[select.selectedIndex];
+		return selected;
+	},
+	setOptions : function(id, keyValues, select, kfunc, vfunc) {
+		var $sel = (id.constructor == String) ? $("#" + id) : $(id);
+		var kfunc = kfunc || function(i) {
+			return i
+		};
+		var vfunc = vfunc || function(i) {
+			return i
+		};
+		$sel.empty();
+		for ( var key in keyValues) {
+			var $opt = $("<option>").val(kfunc(key)).text(vfunc(keyValues[key])).attr("selected", select == key);
+			$sel.append($opt);
 		}
+	},
+	renewSelectWithProertyOfArray : function(array, property, chooser, select) {
+		this.setOptions(chooser, array, select, function(k) {
+			return array[k][property]
+		}, function(v) {
+			return v[property]
+		});
+	},
+
+	getLangAttrs : function(hash, key, code) {
+		code = code || $i18n.getLanguageCode();
+		var ret = {};
+		for ( var k in hash) {
+			ret[k] = this.getLangAttr(hash[k], key, code);
+		}
+		return ret;
+	},
+	getLangAttr : function(obj, key, code) {
+		code = code || $i18n.getLanguageCode();
+		return obj[$i18n.getKeyCode(key, code)];
+	}
 });
+
+var $db = (function() {
+	var DB_NAME = 'navcog-map-editor';
+	var DB_VERSION = 2;
+	var DB_STORE_NAME = 'mapdata';
+	var DATA_KEY = 'localmapdata';
+	var db;
+
+	function openDb() {
+		var req = indexedDB.open(DB_NAME, DB_VERSION);
+		req.onsuccess = function(evt) {
+			db = this.result;
+			$db.trigger("dbopen");
+		};
+		req.onerror = function(evt) {
+			console.error("openDb:", evt.target.errorCode);
+		};
+		req.onupgradeneeded = function(evt) {
+			console.log("openDb.onupgradeneeded");
+			var store = evt.currentTarget.result.createObjectStore(DB_STORE_NAME, {
+				autoIncrement : false
+			});
+			store.createIndex("updated", "updated", {
+				unique : false
+			});
+		};
+	}
+
+	function getObjectStore(store_name, mode) {
+		var tx = db.transaction(store_name, mode);
+		return tx.objectStore(store_name);
+	}
+
+	function clearObjectStore(store_name) {
+		var store = getObjectStore(DB_STORE_NAME, 'readwrite');
+		var req = store.clear();
+		req.onsuccess = function(evt) {
+			displayFiles();
+		};
+		req.onerror = function(evt) {
+			console.error("clearObjectStore:", evt.target.errorCode);
+		};
+	}
+
+	function getData(callback) {
+		var store = getObjectStore(DB_STORE_NAME, 'readonly');
+		req = store.get(DATA_KEY);
+		req.onsuccess = function(e) {
+			if (callback) {
+				callback(this.result?this.result.data:{});
+			}
+		}
+		req.onerror = function(e) {
+			console.error("error", this.error);
+		}
+	}
+
+	function saveData(data) {
+		var obj = {
+			updated : new Date(),
+			data : data 
+		};
+		console.log(obj);
+
+		var store = getObjectStore(DB_STORE_NAME, 'readwrite');
+		var req = store.openCursor();
+		req.onsuccess = function(evt) {
+			var cursor = evt.target.result;
+
+			if (cursor) {
+				if (cursor.key == DATA_KEY) {
+					req = cursor.update(obj, DATA_KEY);
+					req.onerror = function() {
+						console.error("error", this.error);
+					};
+				} else {
+					cursor["continue"]();
+				}
+			} else {
+				req = store.add(obj, DATA_KEY);
+				req.onerror = function() {
+					console.error("error", this.error);
+				};
+			}
+		};
+		req.onerror = function() {
+			console.error("error", this.error);
+		};
+	}
+	openDb();
+
+	return $({}).extend({
+		saveData : saveData,
+		getData : getData
+	});
+})();
