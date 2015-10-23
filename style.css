@@ -87,7 +87,7 @@ p, h3 {
 	display: none;
 }
 
-.tab fieldset {
+fieldset {
 	margin: 0.5em 2px;
 	padding: 0.5em 1em;
 }
@@ -137,4 +137,13 @@ span.hint {
 }
 span.hint::before {
 	content: "*";
+}
+
+input[type=file] {
+	width: 200px;
+}
+
+hr {
+	margin: 1em 2px;
+	clear: both;
 }

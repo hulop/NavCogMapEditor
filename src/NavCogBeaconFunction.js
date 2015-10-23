@@ -35,14 +35,15 @@ function renderBeaconsInLayer(layer) {
 	_currentBeacon = null;
 }
 
-function deRenderBeaconsInLayer(layer) {
-	for (var beaconID in layer.beacons) {
+$editor.on("derender", function(e, layer) {
+	for (var beaconID in layer?layer.beacons:_beaconMarkers) {
 		if (_beaconMarkers[beaconID]) {
 			_beaconMarkers[beaconID].setMap(null);
-		}
+			delete _beaconMarkers[beaconID];
+		}	
 	}
 	_currentBeacon = null;
-}
+});
 
 function renderBeacon(beacon) {
 	if (_beaconMarkers[beacon.id]) {
@@ -124,13 +125,13 @@ function showBeaconInfo(beacon) {
 				_currentBeacon.bePOI = true;
 			} else {
 				_beaconInfoEditorPOIInfo.value = "";
-				_currentBeacon.poiInfo = "";
+				_currentBeacon[$i18n.k("poiInfo")] = "";
 				_currentBeacon.bePOI = false;
 			}
 		});
 
 		_beaconInfoEditorPOIInfo.addEventListener("keyup", function(e) {
-			_currentBeacon.poiInfo = this.value;
+			_currentBeacon[$i18n.k("poiInfo")] = this.value;
 		});
 	};
 	
@@ -141,7 +142,7 @@ function showBeaconInfo(beacon) {
 	_beaconInfoEditorID.value = beacon.id;
 	_beaconInfoEditorEnablePOI.checked = beacon.bePOI;
 	_beaconInfoEditorPOIInfo.disabled = !beacon.bePOI;
-	_beaconInfoEditorPOIInfo.value = beacon.poiInfo;
+	_beaconInfoEditorPOIInfo.value = beacon[$i18n.k("poiInfo")];
 }
 
 function removeCurrentBeacon() {
