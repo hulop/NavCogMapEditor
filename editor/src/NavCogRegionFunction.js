@@ -22,28 +22,28 @@
  
  function addNewRegion() {
 	if (_currentLayer == null) {
-		window.alert(i18n.t("You should have at least one layer"));
+		window.alert($i18n.t("You should have at least one layer"));
 		return;
 	};
 
 	var regionName = _mapEditorRegionNameInput.value;
 	if (regionName == "") {
-		window.alert(i18n.t("Please input a name for region"));
+		window.alert($i18n.t("Please input a name for region"));
 		return
 	};
 	if (_currentLayer.regions[regionName]) {
-		window.alert(i18n.t("Region with this name already exists"));
+		window.alert($i18n.t("Region with this name already exists"));
 		return;
 	};
 
 	if (!_mapEditorRegionLngInput.value || !_mapEditorRegionLatInput.value) {
-		window.alert(i18n.t("Please input both lat and lng"));
+		window.alert($i18n.t("Please input both lat and lng"));
 		return;
 	};
 
 	var file = _mapEditorImgChooser.files[0];
 	if (!file) {
-		window.alert(i18n.t("Please select a image"));
+		window.alert($i18n.t("Please select a image"));
 		return;
 	};
 	
@@ -64,11 +64,10 @@
 }
 
 function renderRegionsInLayer(layer) {
+	console.log("render region");
     if (!layer) {return;}
+    $util.renewSelectWithProertyOfArray(layer.regions, "name", _mapEditorRegionChooser);
     for (var region in layer.regions) {
-		var newOpt = document.createElement("option");
-		newOpt.text = layer.regions[region].name;
-		_mapEditorRegionChooser.add(newOpt);
 		renderRegion(layer.regions[region]);
 	}
 	if (_mapEditorRegionChooser.value) {
@@ -78,15 +77,13 @@ function renderRegionsInLayer(layer) {
 	}
 }
 
-function deRenderRegionsInLayer(layer) {
-	for (var region in layer.regions) {
-		while (_mapEditorRegionChooser.value) {
-			_mapEditorRegionChooser.remove(_mapEditorRegionChooser.selectedIndex);
-		}
+$editor.on("derender", function(e, layer) {
+	console.log(["derender region", layer]);
+	for (var region in layer?layer.regions:_regionOverlays) {
 		_regionOverlays[region].setMap(null);
 	}
 	_currentRegion = null;
-}
+});
 
 function renderRegion(region) {
 	if (_regionOverlays[region.name]) {

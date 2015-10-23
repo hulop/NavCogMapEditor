@@ -34,14 +34,15 @@
 	_tmpEdgeLine = null;
 }
 
-function deRenderEdgesInLayer(layer) {
-	for (var edgeID in layer.edges) {
+$editor.on("derender", function(e, layer) {
+	for (var edgeID in layer?layer.edges:_edgePolylines) {
 		if (_edgePolylines[edgeID]) {
 			_edgePolylines[edgeID].setMap(null);
+			delete _edgePolylines[edgeID];
 		}
 	}
 	_currentEdge = null;
-}
+});
 
 function renderEdgesInLayer(layer) {
 	for (var edgeID in layer.edges) {
@@ -117,11 +118,11 @@ function showEdgeInfo(edge, pos) {
 		});
 
 		_edgeInfoEditorInfo1.addEventListener("keyup", function(e) {
-			_currentEdge.infoFromNode1 = this.value;
+			_currentEdge[$i18n.k("infoFromNode1")] = this.value;
 		});
 
 		_edgeInfoEditorInfo2.addEventListener("keyup", function(e) {
-			_currentEdge.infoFromNode2 = this.value;
+			_currentEdge[$i18n.k("infoFromNode2")] = this.value;
 		});
 
 		_edgeInfoEditorMinKnnDistInput.addEventListener("keyup", function(e) {
@@ -194,8 +195,8 @@ function showEdgeInfo(edge, pos) {
 	_edgeInfoEditorDataFileName.value = edge.dataFile;
 	_edgeInfoEditorNodeID1.value = edge.node1;
 	_edgeInfoEditorNodeID2.value = edge.node2;
-	_edgeInfoEditorInfo1.value = edge.infoFromNode1;
-	_edgeInfoEditorInfo2.value = edge.infoFromNode2;
+	_edgeInfoEditorInfo1.value = edge[$i18n.k("infoFromNode1")];
+	_edgeInfoEditorInfo2.value = edge[$i18n.k("infoFromNode2")];
 }
 
 function saveEdgeInfo() {
@@ -204,8 +205,8 @@ function saveEdgeInfo() {
 	var invOri = ori > 0 ? ori - 180 : ori + 180;
 	_currentEdge.oriFromNode1 = ori;
 	_currentEdge.oriFromNode2 = invOri;
-	_currentEdge.infoFromNode1 = _edgeInfoEditorInfo1.value;
-	_currentEdge.infoFromNode2 = _edgeInfoEditorInfo2.value;
+	_currentEdge[$i18n.k("infoFromNode1")] = _edgeInfoEditorInfo1.value;
+	_currentEdge[$i18n.k("infoFromNode2")] = _edgeInfoEditorInfo2.value;
 	_currentEdge.minKnnDist = parseFloat(_edgeInfoEditorMinKnnDistInput.value);
 	_currentEdge.maxKnnDist = parseFloat(_edgeInfoEditorMaxKnnDistInput.value);
 	_currentLayer.nodes[_currentEdge.node1].infoFromEdges[_currentEdge.id].x = parseFloat(_edgeInfoEditorXInput1.value);

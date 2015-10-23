@@ -21,7 +21,7 @@
  *******************************************************************************/
  
  function addNewNode(latLng, id, layers) {
-	var b = getSelectedOption("topo-building-chooser") && getSelectedOption("topo-building-chooser").text;
+	var b = $util.getSelectedOption("topo-building-chooser") && $util.getSelectedOption("topo-building-chooser").text;
 	var newNode = getNewNode({lat:latLng.lat(), lng:latLng.lng(), id:id, layerZ:_currentLayer.z, building: b});
 	for (var z in layers) { //TODO: should be removed, for large number of nodes
 		newNode.transitInfo[z] = getNewTransitInfoToLayer(layers[z]);
@@ -39,14 +39,26 @@ function renderNodesInLayer(layer) {
 	_currentNode = null;
 }
 
-function deRenderNodesInLayer(layer) {
-	for (var nodeID in layer.nodes) {
+$editor.on("derender", function(e, layer) {
+	for (var nodeID in layer?layer.nodes:_nodeMarkers) {
 		if (_nodeMarkers[nodeID]) {
 			_nodeMarkers[nodeID].setMap(null);
+			delete _nodeMarkers[nodeID];
 		};
 	}
 	_currentNode = null;
+});
+
+for ( var edgeID in _edgePolylines) {
+	_edgePolylines[edgeID].setMap(null);
+	delete _edgePolylines[edgeID];
 }
+
+for ( var beaconID in _beaconMarkers) {
+	_beaconMarkers[beaconID].setMap(null);
+	delete _beaconMarkers[beaconID];
+}
+
 
 function setImgForNode(node) {
 	if (_nodeMarkers[node.id]) {
@@ -187,17 +199,17 @@ function showNodeInfo(node) {
 		_nodeInfoEditorTrickyEnableChecker = document.getElementById("node-info-tricky-enable");
 		_nodeInfoEditorTrickyInfoInput = document.getElementById("node-info-tricky-info");
 		_nodeInfoEditorEdgeChooser.addEventListener("change", function(e) {
-			_nodeInfoEditorNodeInfoInput.value = _currentNode.infoFromEdges[this.value].info;
-			_nodeInfoEditorDestInfo.value = _currentNode.infoFromEdges[this.value].destInfo;
+			_nodeInfoEditorNodeInfoInput.value = _currentNode.infoFromEdges[this.value][$i18n.k("info")];
+			_nodeInfoEditorDestInfo.value = _currentNode.infoFromEdges[this.value][$i18n.k("destInfo")];
 			_nodeInfoEditorTopoXInput.value = _currentNode.infoFromEdges[this.value].x;
 			_nodeInfoEditorTopoYInput.value = _currentNode.infoFromEdges[this.value].y;
 			_nodeInfoEditorTrickyEnableChecker.checked = _currentNode.infoFromEdges[this.value].beTricky;
 			_nodeInfoEditorTrickyInfoInput.disabled = !_currentNode.infoFromEdges[this.value].beTricky;
-			_nodeInfoEditorTrickyInfoInput.value = _currentNode.infoFromEdges[this.value].trickyInfo;
+			_nodeInfoEditorTrickyInfoInput.value = _currentNode.infoFromEdges[this.value][$i18n.k("trickyInfo")];
 		});
 
 		_nodeInfoEditorNodeInfoInput.addEventListener("keyup", function(e) {
-			_currentNode.infoFromEdges[_nodeInfoEditorEdgeChooser.value].info = this.value;
+			_currentNode.infoFromEdges[_nodeInfoEditorEdgeChooser.value][$i18n.k("info")] = this.value;
 		});
 
 		_nodeInfoEditorTransitLayerChooser.addEventListener("change", function(e) {
@@ -207,7 +219,7 @@ function showNodeInfo(node) {
 		_nodeInfoEditorTransitEnableChecker.addEventListener("change", function(e) {
 			toggleTransitUIToLayer(_currentNode, _layers[_nodeInfoEditorTransitLayerChooser.value], _nodeInfoEditorTransitEnableChecker.checked);
 			if (_nodeInfoEditorTransitNodeChooser.value == _currentNode.id) {
-				window.alert(i18n.t("Current Node Transit to itself"));
+				window.alert($i18n.t("Current Node Transit to itself"));
 			};
 		});
 		_nodeInfoEditorTransitNodeChooser.addEventListener("change", function(e) {
@@ -231,16 +243,16 @@ function showNodeInfo(node) {
 			};
 			enableTransit(_currentNode, _layers[targetLayerZ].nodes[targetNodeid]);
 			if (_nodeInfoEditorTransitNodeChooser.value == _currentNode.id) {
-				window.alert(i18n.t("Current Node Transit to itself"));
+				window.alert($i18n.t("Current Node Transit to itself"));
 			};
 		})
 		_nodeInfoEditorTransitInfoInput.addEventListener("keyup", function(e) {
 			var z = _nodeInfoEditorTransitLayerChooser.value;
-			_currentNode.transitInfo[z].info = this.value;
+			_currentNode.transitInfo[z][$i18n.k("info")] = this.value;
 		});
 
 		_nodeInfoEditorDestInfo.addEventListener("keyup", function(e) {
-			_currentNode.infoFromEdges[_nodeInfoEditorEdgeChooser.value].destInfo = this.value;
+			_currentNode.infoFromEdges[_nodeInfoEditorEdgeChooser.value][$i18n.k("destInfo")] = this.value;
 		});
 
 		_nodeInfoEditorTrickyEnableChecker.addEventListener("change", function(e) {
@@ -251,12 +263,12 @@ function showNodeInfo(node) {
 				_nodeInfoEditorTrickyInfoInput.disabled = true;
 				_nodeInfoEditorTrickyInfoInput.value = "";
 				_currentNode.infoFromEdges[_nodeInfoEditorEdgeChooser.value].beTricky = false;
-				_currentNode.infoFromEdges[_nodeInfoEditorEdgeChooser.value].trickyInfo = "";
+				_currentNode.infoFromEdges[_nodeInfoEditorEdgeChooser.value][$i18n.k("trickyInfo")] = "";
 			}
 		});
 
 		_nodeInfoEditorTrickyInfoInput.addEventListener("keyup", function(e) {
-			_currentNode.infoFromEdges[_nodeInfoEditorEdgeChooser.value].trickyInfo = this.value;
+			_currentNode.infoFromEdges[_nodeInfoEditorEdgeChooser.value][$i18n.k("trickyInfo")] = this.value;
 		});
 
 		_nodeInfoEditorBuildingChooser.addEventListener("change", function(e) {
@@ -267,15 +279,15 @@ function showNodeInfo(node) {
 			var z = _nodeInfoEditorEdgeChooser.value;
 			if (this.value == "Destination") {
 				_nodeInfoEditorDestInfo.disabled = false;
-				_currentNode.transitInfo[z].destInfo = "";
+				_currentNode.transitInfo[z][$i18n.k("destInfo")] = "";
 			} else {
 				_nodeInfoEditorDestInfo.disabled = true;
 				_nodeInfoEditorDestInfo.value = "";
-				_currentNode.transitInfo[z].destInfo = "";
+				_currentNode.transitInfo[z][$i18n.k("destInfo")] = "";
 			}
 		});
 		_nodeInfoEditorNameInput.addEventListener("keyup", function(e) {
-			_currentNode.name = this.value;
+			_currentNode[$i18n.k("name")] = this.value;
 		});
 		_nodeInfoEditorBuildingChooser.addEventListener("change", function(e) {
 			_currentNode.building = this.value;
@@ -292,32 +304,27 @@ function showNodeInfo(node) {
 	};
 
 	_nodeInfoEditorTypeChooser.selectedIndex = node.type;
-	_nodeInfoEditorNameInput.value = node.name;
+	_nodeInfoEditorNameInput.value = node[$i18n.k("name")];
 	_nodeInfoEditorIDInput.value = node.id;
 	_nodeInfoEditorFloor.value = node.floor;
 	_nodeInfoEditorKnnDistInput.value = node.knnDistThres;
 	_nodeInfoEditorPosDistInput.value = node.posDistThres;
 
 	// update building list
-	while (_nodeInfoEditorBuildingChooser.value) {
-		_nodeInfoEditorBuildingChooser.remove(_nodeInfoEditorBuildingChooser.selectedIndex);
-	}
-	var newOpt = document.createElement("option");
-	newOpt.text = i18n.t("None");
-	newOpt.value = "None";
-	_nodeInfoEditorBuildingChooser.add(newOpt);
-	for (var name in _buildingNames) {
-		addOptionToSelect(_buildingNames[name], _nodeInfoEditorBuildingChooser);
-	}
-	selectOptWithText(node.building, _nodeInfoEditorBuildingChooser);
-	renewSelectWithProertyOfArray(node.infoFromEdges, "edgeID", _nodeInfoEditorEdgeChooser);
+	$util.setOptions(_nodeInfoEditorBuildingChooser, 
+			$.extend({"None":$i18n.t("None")}, 
+					$util.getLangAttrs(_buildings,"name")),
+			node.building);
+
+
+	$util.renewSelectWithProertyOfArray(node.infoFromEdges, "edgeID", _nodeInfoEditorEdgeChooser);
 	if (_nodeInfoEditorEdgeChooser.value) {
 		_nodeInfoEditorTopoXInput.value = node.infoFromEdges[_nodeInfoEditorEdgeChooser.value].x;
 		_nodeInfoEditorTopoYInput.value = node.infoFromEdges[_nodeInfoEditorEdgeChooser.value].y;
-		_nodeInfoEditorNodeInfoInput.value = node.infoFromEdges[_nodeInfoEditorEdgeChooser.value].info;
+		_nodeInfoEditorNodeInfoInput.value = node.infoFromEdges[_nodeInfoEditorEdgeChooser.value][$i18n.k("info")];
 		if (_nodeInfoEditorTypeChooser.value == "Destination") {
 			_nodeInfoEditorDestInfo.disabled = false;
-			_nodeInfoEditorDestInfo.value = _currentNode.infoFromEdges[_nodeInfoEditorEdgeChooser.value].destInfo;
+			_nodeInfoEditorDestInfo.value = _currentNode.infoFromEdges[_nodeInfoEditorEdgeChooser.value][$i18n.k("destInfo")];
 		} else {
 			_nodeInfoEditorDestInfo.disabled = true;
 			_nodeInfoEditorDestInfo.value = "";
@@ -325,14 +332,14 @@ function showNodeInfo(node) {
 		if (node.infoFromEdges[_nodeInfoEditorEdgeChooser.value].beTricky) {
 			_nodeInfoEditorTrickyEnableChecker.checked = true;
 			_nodeInfoEditorTrickyInfoInput.disabled = false;
-			_nodeInfoEditorTrickyInfoInput.value = node.infoFromEdges[_nodeInfoEditorEdgeChooser.value].trickyInfo;
+			_nodeInfoEditorTrickyInfoInput.value = node.infoFromEdges[_nodeInfoEditorEdgeChooser.value][$i18n.k("trickyInfo")];
 		} else {
 			_nodeInfoEditorTrickyEnableChecker.checked = false;
 			_nodeInfoEditorTrickyInfoInput.disabled = true;
 			_nodeInfoEditorTrickyInfoInput.value = "";
 		}
 	};
-	renewSelectWithProertyOfArray(_layers, "z", _nodeInfoEditorTransitLayerChooser);
+	$util.renewSelectWithProertyOfArray(_layers, "z", _nodeInfoEditorTransitLayerChooser);
 	setTransitUIToLayer(_currentNode, _layers[_nodeInfoEditorTransitLayerChooser.value]);
 }
 
@@ -346,7 +353,7 @@ function setTransitUIToLayer(node, layer) {
 		_nodeInfoEditorTransitEnableChecker.checked = true;
 		_nodeInfoEditorTransitNodeChooser.disabled = false;
 		_nodeInfoEditorTransitInfoInput.disabled = false;
-		_nodeInfoEditorTransitInfoInput.value = node.transitInfo[layer.z].info;
+		_nodeInfoEditorTransitInfoInput.value = node.transitInfo[layer.z][$i18n.k("info")];
 		selectOptWithText(node.transitInfo[layer.z].node, _nodeInfoEditorTransitNodeChooser);
 	} else {
 		_nodeInfoEditorTransitEnableChecker.checked = false;

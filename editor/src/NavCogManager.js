@@ -24,6 +24,7 @@
 	reloadData();
 	initMapEvent();
 	initKeyboardEvent();
+	$(window).trigger("hashchange");
 }
 
 function reloadData() {
@@ -33,13 +34,54 @@ function reloadData() {
 	} else {
 	    _data = JSON.parse(strData);
 	}
-	reloadMap();
+	$editor.trigger("dataLoaded");
 }	
 
-function reloadMap() {
+$editor.on("dataLoaded", function() {
+    _layers = _data.layers || {};
+	_maxNodeID = _data.maxNodeID || 0;
+	_maxEdgeID = _data.maxEdgeID || 0;
+	_maxBeaconID = _data.maxBeaconID || 0;
+	_layers = _data.layers || {};
+	_buildings = _data.buildings || [];
+	_lastUUID = _data.lastUUID;
+	_lastMajorID = _data.lastMajorID;
+	_lastMinorID = _data.lastMinorID;
+	_buildings = _data.buildings || {};
+
+	// for backward compatibility (array -> hash change)
+	if (_buildings.constructor == Array) {
+		var newHash = {};
+		for(var i = 0; i < _buildings.length; i++) {
+			var name = _buildings[i];
+			newHash[name] = {"name":name};
+		}
+		_buildings = newHash;
+	}
+	// for backward compatibility (poiInfo -> destInfo, surpriseInfo -> poiInfo)
+	for(var c in $.extend({"":false},_data.languages)) {
+		for ( var l in _layers) {
+			for ( var n in _layers[l].nodes) {
+				for ( var i in _layers[l].nodes[n].infoFromEdges) {
+					var node = _layers[l].nodes[n].infoFromEdges[i];
+					if (node[$i18n.k("poiInfo", c)]) {
+						node[$i18n.k("destInfo", c)] = node[$i18n.k("poiInfo", c)];
+						delete node[$i18n.k("poiInfo", c)];
+					}
+				}
+			}
+			for ( var b in _layers[l].beacons) {
+				var beacon = _layers[l].beacons[b];
+				if (beacon[$i18n.k("surpriseInfo", c)]) {
+					beacon[$i18n.k("poiInfo", c)] = beacon[$i18n.k("surpriseInfo", c)];
+					delete beacon[$i18n.k("surpriseInfo", c)];
+				}
+			}
+		}
+	}
+	
 	try {
 		_map = getNewGoogleMap();
-		//setMapVisibility(_data.doneUseMap);
 	} catch(e) {
 	}
 	if (_map && _data.centerLat && _data.centerLng) {	
@@ -47,37 +89,30 @@ function reloadMap() {
 		_map.setZoom(_data.zoom || 20);
 	}
 	
-	_maxNodeID = _data.maxNodeID || _maxNodeID;
-	_maxEdgeID = _data.maxEdgeID || _maxEdgeID;
-	_maxBeaconID = _data.maxBeaconID || _maxBeaconID;
-	_lastUUID = _data["lastUUID"];
-	_lastMajorID = _data["lastMajorID"];
-	_lastMinorID = _data["lastMinorID"];
-        _layers = _data.layers || {};
-	_buildingNames = _data.buildings || [];
-	for (var name in _buildingNames) {
-		addOptionToSelect(_buildingNames[name], _topoEditorBuildingChooser);
-	}
-	for (var layer in _layers) {
-		addOptionToSelect(_layers[layer].z, _mapEditorLayerChooser);
-		addOptionToSelect(_layers[layer].z, _topoEditorLayerChooser);
-		addOptionToSelect(_layers[layer].z, _beaconEditorLayerChooser);
-	}
+	$editor.trigger("derender");
+	$editor.trigger("layerChange");
+	$editor.trigger("buildingChange");
+	$editor.trigger("languageChange", _data.languages);
 
-	/*
-	for (var z in _layers) {
-		var layer = _layers[z];
-		for (var beaconID in layer.beacons) {
-			var beacon = layer.beacons[beaconID];
-			beacon.beSurprise = false;
-			beacon.surpriseInfo = "";
-		}
-	}
-	*/
-	
-	_currentLayer = _layers[_mapEditorLayerChooser.value];
 	renderLayer(_currentLayer);
-}
+});
+
+$editor.on("layerChange", function(e, layer) {
+	$util.renewSelectWithProertyOfArray(_layers, "z", _mapEditorLayerChooser, layer&&layer.z);
+	$util.renewSelectWithProertyOfArray(_layers, "z", _topoEditorLayerChooser, layer&&layer.z);
+	$util.renewSelectWithProertyOfArray(_layers, "z", _beaconEditorLayerChooser, layer&&layer.z);
+	_currentLayer = layer || _layers[_mapEditorLayerChooser.value];
+});
+
+$editor.on("buildingChange", function(e, building) {
+	$util.setOptions("topo-building-chooser",$util.getLangAttrs(_buildings,"name")); 
+	
+	$("#building_lang").text("(" + $i18n.getLanguageCodeString() + ")");
+	var option = $util.getSelectedOption("topo-building-chooser");
+	if (option) {
+		$("#building_lang_name").val($util.getLangAttr(_buildings[option.value], "name"));
+	}
+});
 
 function initMapEvent() {
 	if (!_map) {
@@ -90,7 +125,7 @@ function initMapEvent() {
 	});
     _map.addListener("click", function(e) {
     	if (_currentLayer == null) {
-    		window.alert(i18n.t("Please add at least one layer"));
+    		window.alert($i18n.t("Please add at least one layer"));
     		return;
     	};
     	_mapEditorRegionLatInput.value = e.latLng.lat();
@@ -136,7 +171,8 @@ function initMapEvent() {
 							strokeWeight: 10,
 							strokeOpacity: 1.0,
 						});
-						_tmpEdgeLine.addListener("click", function(e) {
+						
+						google.maps.event.addListenerOnce(_tmpEdgeLine, "click", function(e) { // only for once
 							if (_currentEditMode == EditMode.Topo) {
 								if (_currentTopoEditState == TopoEditState.Adding_Edge) {
 									if (_currentEdgeEditState == EdgeEditState.Waiting_Next_Node) {
@@ -149,6 +185,7 @@ function initMapEvent() {
 								};
 							};
 						});
+						/*
 						_tmpEdgeLine.addListener("mousemove", function(e) {
 							if (_currentEditMode == EditMode.Topo) {
 								if (_currentTopoEditState == TopoEditState.Adding_Edge) {
@@ -168,7 +205,7 @@ function initMapEvent() {
 									_tmpEdgeLine.setPath(path);
 								}
 							}
-						})
+						})*/
     				} else {
     					var path = [];
 						path.push({lat:_tmpEdgeNode1.lat, lng:_tmpEdgeNode1.lng});
@@ -220,9 +257,9 @@ function initKeyboardEvent() {
 
 function addNewLayer() {
 	if (_layers[_mapEditorLayerInput.value]) {
-		window.alert(i18n.t("A layer with same z-index has been added"));
+		window.alert($i18n.t("A layer with same z-index has been added"));
 	} else if (_mapEditorLayerInput.value == "") {
-		window.alert(i18n.t("Please input a z-index"));
+		window.alert($i18n.t("Please input a z-index"));
 	} else {
 		var newLayer = getNewLayer({z:_mapEditorLayerInput.value});
 		_layers[newLayer.z] = newLayer;
@@ -242,19 +279,8 @@ function addNewLayer() {
 	}
 }
 
-function reRenderElementsOfLayer(layer) {
-	deRenderNodesInLayer(layer);
-	deRenderEdgesInLayer(layer);
-	deRenderBeaconsInLayer(layer);
-	if (_currentEditMode == EditMode.Topo) {
-		renderNodesInLayer(layer);
-		renderEdgesInLayer(layer);
-	} else if (_currentEditMode == EditMode.Beacon) {
-		renderBeaconsInLayer(layer);
-	}
-}
-
 function renderLayer(layer) {
+	console.log(["renderLayer", layer]);
 	renderRegionsInLayer(layer);
 	if (_currentEditMode == EditMode.Topo) {
 		renderNodesInLayer(layer);
@@ -264,101 +290,79 @@ function renderLayer(layer) {
 	}
 }
 
-function deRenderLayer(layer) {
-	deRenderRegionsInLayer(layer);
-	deRenderNodesInLayer(layer);
-	deRenderEdgesInLayer(layer);
-	deRenderBeaconsInLayer(layer);
-}
 
 function addNewBuildingName() {
 	if (document.getElementById("topo-add-building-input").value) {
-		_buildingNames.push(document.getElementById("topo-add-building-input").value);
-		addOptionToSelect(_buildingNames[_buildingNames.length - 1], _topoEditorBuildingChooser);
+		var name = document.getElementById("topo-add-building-input").value;
+		_buildings[name] = {"name": name};
+		addOptionToSelect(name, _topoEditorBuildingChooser);
 	}
 }
 
 function removeBuilding() {
 	if (_topoEditorBuildingChooser.value) {
-		for (var i = 0; i < _buildingNames.length; i++) {
-			if (_buildingNames[i] == _topoEditorBuildingChooser.value) {
-				_buildingNames.splice(i, 1);
-				break;
-			};
-		};
+		delete _buildings[_topoEditorBuildingChooser.value];
 		_topoEditorBuildingChooser.remove(_topoEditorBuildingChooser.selectedIndex);
 	};
 }
 
-function enableFileManager() {
-	_edgeInfoWindow.close();
-	_nodeInfoWindow.close();
-	_beaconInfoWindow.close();
-	_currentEditMode = EditMode.File;
-	if (_currentLayer) {
-		reRenderElementsOfLayer(_currentLayer);
-	};
-}
+$(document).ready(function() {
+	$("#building_lang_name").keyup(function() {
+		_buildings[$("#topo-building-chooser").val()][$i18n.getKeyCode("name")] = $("#building_lang_name").val();
+	});
+});
 
-function enableMapEditor() {
-	_edgeInfoWindow.close();
-	_nodeInfoWindow.close();
-	_beaconInfoWindow.close();
-	_currentEditMode = EditMode.Map;
-	if (_currentLayer) {
-		reRenderElementsOfLayer(_currentLayer);
-	};
-}
 
-function enableTopoEditor() {
-	_edgeInfoWindow.close();
-	_nodeInfoWindow.close();
-	_beaconInfoWindow.close();
-	_currentEditMode = EditMode.Topo;
+$editor.on("modeChange", function(e, mode) {
+	if (_edgeInfoWindow) {_edgeInfoWindow.close();}
+	if (_nodeInfoWindow) {_nodeInfoWindow.close();}
+	if (_beaconInfoWindow) {_beaconInfoWindow.close();}
+	_currentEditMode = mode;
 	if (_currentLayer) {
-		reRenderElementsOfLayer(_currentLayer);
+		$editor.trigger("derender");
+		renderLayer(_currentLayer);
 	};
-}
+});
 
-function enableBeaconManager() {
-	_edgeInfoWindow.close();
-	_nodeInfoWindow.close();
-	_beaconInfoWindow.close();
-	_currentEditMode = EditMode.Beacon;
-	if (_currentLayer) {
-		reRenderElementsOfLayer(_currentLayer);
-	};
-}
+$(window).on("hashchange", function(e) {
+	var hash = window.location.hash;
+	var mode = EditMode.File;
+	if(hash == "#tab0") { mode = EditMode.File; }
+	if(hash == "#tab1") { mode = EditMode.Map; }
+	if(hash == "#tab2") { mode = EditMode.Topo; }
+	if(hash == "#tab3") { mode = EditMode.Beacon; }
+	$editor.trigger("modeChange", mode);
+});
 
-function saveLocally() {
+function prepareData() {
 	_data["maxNodeID"] = _maxNodeID;
 	_data["maxEdgeID"] = _maxEdgeID;
 	_data["maxBeaconID"] = _maxBeaconID;
 	_data["layers"] = _layers;
-	_data["buildings"] = _buildingNames;
+	_data["buildings"] = _buildings;
 	_data["lastUUID"] = _lastUUID;
 	_data["lastMajorID"] = _lastMajorID;
 	_data["lastMinorID"] = _lastMinorID;
+}
+
+function saveLocally() {
+	prepareData();
 	localStorage.setItem(_dataStorageLabel, JSON.stringify(_data));
 }
 
 function saveToDowndloadFile() {
-	_data["maxNodeID"] = _maxNodeID;
-	_data["maxEdgeID"] = _maxEdgeID;
-	_data["maxBeaconID"] = _maxBeaconID;
-	_data["layers"] = _layers;
-	_data["buildings"] = _buildingNames;
-	_data["lastUUID"] = _lastUUID;
-	_data["lastMajorID"] = _lastMajorID;
-	_data["lastMinorID"] = _lastMinorID;
+	prepareData();
 	var filename = "NavCogMapData.json";
     var blob = new Blob([JSON.stringify(_data)], { type: 'text/json;charset=utf-8;' });
-    if (navigator.msSaveBlob) { // IE 10+
+    downloadFile(blob, filename);
+}
+
+function downloadFile(blob, filename) {    
+    if (navigator.msSaveBlob) {
         navigator.msSaveBlob(blob, filename);
     } else {
         var link = document.createElement("a");
-        if (link.download !== undefined) { // feature detection
-            // Browsers that support HTML5 download attribute
+        if (link.download !== undefined) {
             var url = URL.createObjectURL(blob);
             link.setAttribute("href", url);
             link.setAttribute("download", filename);
@@ -380,23 +384,12 @@ function addOptionToSelect(text, chooser) {
 	chooser.add(newOpt);
 }
 
-function renewSelectWithProertyOfArray(array, property, chooser) {
-	while (chooser.value) {
-		chooser.remove(chooser.selectedIndex);
-	}
-	for (var key in array) {
-		var newOpt = document.createElement("option");
-		newOpt.text = (array[key])[property];
-		chooser.add(newOpt);
-	}
-}
-
 function renewSelectWithProertyOfArrayWithDummy(array, property, dummy, chooser) {
 	while (chooser.value) {
 		chooser.remove(chooser.selectedIndex);
 	}
 	var newOpt = document.createElement("option");
-	newOpt.text = i18n.t(dummy);
+	newOpt.text = $i18n.t(dummy);
 	newOpt.value = dummy;
 	chooser.add(newOpt);
 	for (var key in array) {
@@ -431,13 +424,15 @@ function setMapVisibility(dontUseMap) {
 	var GOOGLE_MAP_INVISIVLE_STYLE = { "stylers": [ { "visibility": "off" } ] };
 	if (_map) {
 		if (dontUseMap) {
+			_data._centerLat = _data.centerLat;
+			_data._centerLng = _data.centerLng;
 			_map.setOptions({styles: [GOOGLE_MAP_INVISIVLE_STYLE]});
 			_map.setCenter({lat:0,lng:0});
 			_map.setZoom(21);
 			_map.setOptions({minZoom:18});
 		} else {
 			_map.setOptions({styles: [GOOGLE_MAP_DEFAULT_STYLE]});
-			_map.setCenter({lat:_data.centerLat,lng:_data.centerLng})
+			_map.setCenter({lat:_data._centerLat,lng:_data._centerLng})
 			_map.setOptions({minZoom:0});
 		}
 	}
