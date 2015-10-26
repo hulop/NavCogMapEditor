@@ -191,12 +191,13 @@ $i18n = (function() {
 	var supported = {}
 	var languages = {}
 	function addSupportedLanguage(lang, name, url, extra_codes) {
+		lang = lang.toLowerCase();
 		supported[lang] = lang;
-		$(extra_codes).each(function(e) {
-			supported[e] = lang;
+		$(extra_codes).each(function(i, e) {
+			supported[e.toLowerCase()] = lang;
 		});
 
-		languages[lang] = {
+		languages[lang.toLowerCase()] = {
 			name : name,
 			url : url
 		};
@@ -221,18 +222,19 @@ $i18n = (function() {
 	}
 
 	function setUILanguage(_lang) {
+		_lang = _lang.toLowerCase();
 		console.log("set language " + _lang);
 		if (supported[_lang]) {
 			lang = supported[_lang];
 		}
-		if (!loaded[_lang]) {
+		if (!loaded[lang]) {
 			$.ajax({
-				url : languages[_lang].url, // "./i18n/"+_lang+".json",
+				url : languages[lang].url, // "./i18n/"+_lang+".json",
 				async : true,
 				dataType : "json",
 				success : function(data) {
-					loaded[_lang] = data;
-					$i18n.trigger("initialized", _lang);
+					loaded[lang] = data;
+					$i18n.trigger("initialized", lang);
 				},
 				error : function(ajx, error) {
 					console.log(error);
@@ -456,10 +458,11 @@ var $db = (function() {
 			console.error("error", this.error);
 		};
 	}
-	openDb();
+	//openDb();
 
 	return $({}).extend({
 		saveData : saveData,
-		getData : getData
+		getData : getData,
+		open: openDb
 	});
 })();

@@ -29,9 +29,8 @@ $db.on("dbopen", function(e) {
 });
 
  function loaded() {
-	 return; // deprecated
-	reloadData();
-	initMapEvent();
+	$db.open()
+	//reloadData();
 	initKeyboardEvent();
 }
 
@@ -91,6 +90,7 @@ $editor.on("dataLoaded", function() {
 	
 	try {
 		_map = getNewGoogleMap();
+		initMapEvent();
 	} catch(e) {
 	}
 	if (_map && _data.centerLat && _data.centerLng) {	

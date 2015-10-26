@@ -233,7 +233,6 @@ $(document).ready(function() {
 	// add supported languages
 	$i18n.addSupportedLanguage("ja-JP", "Japanese 日本語", "i18n/ja-JP.json", ["ja"]); 
 	$i18n.addSupportedLanguage("en-US", "English (US)", "i18n/en-US.json", ["en"]); 
-	$util.setOptions("language_select", $i18n.getLanguages(), language);
 	
 	// load language resource
 	var language = window.navigator.userLanguage || window.navigator.language;
@@ -243,6 +242,7 @@ $(document).ready(function() {
 		}
 	}
 	$i18n.setUILanguage(language);
+	$util.setOptions("language_select", $i18n.getLanguages(), language);
 	
 
 	// set event handler
@@ -362,4 +362,5 @@ $i18n.on("initialized", function(e, language) {
 	
 	$i18n.scan();
 	$(document.body).show();
+	loaded();
 });
