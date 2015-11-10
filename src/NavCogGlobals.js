@@ -170,6 +170,7 @@ $(document).ready(function() {
 		}
 		_currentLayer = _layers[chooser.value];
 		$editor.trigger("layerChange", _currentLayer);
+		renderLayer(_currentLayer);
 	}
 
 	// UI Events

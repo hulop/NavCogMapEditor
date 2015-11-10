@@ -425,6 +425,28 @@ var $db = (function() {
 			console.error("error", this.error);
 		}
 	}
+	
+	function clearData() {
+		var store = getObjectStore(DB_STORE_NAME, 'readwrite');
+		var req = store.openCursor();
+		req.onsuccess = function(evt) {
+			var cursor = evt.target.result;
+
+			if (cursor) {
+				if (cursor.key == DATA_KEY) {
+					req = cursor["delete"]();
+					req.onerror = function() {
+						console.error("error", this.error);
+					};
+				} else {
+					cursor["continue"]();
+				}
+			}
+		};
+		req.onerror = function() {
+			console.error("error", this.error);
+		};
+	}
 
 	function saveData(data) {
 		var obj = {
@@ -463,6 +485,7 @@ var $db = (function() {
 	return $({}).extend({
 		saveData : saveData,
 		getData : getData,
-		open: openDb
+		open: openDb,
+		clearData : clearData
 	});
 })();

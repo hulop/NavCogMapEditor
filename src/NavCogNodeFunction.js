@@ -349,6 +349,10 @@ function saveNodeInfo(node) {
 
 function setTransitUIToLayer(node, layer) {
 	renewSelectWithProertyOfArrayWithDummy(_layers[layer.z].nodes, "id", "None", _nodeInfoEditorTransitNodeChooser);
+	console.log([node, layer]);
+	if (!node.transitInfo[layer.z]) {
+		node.transitInfo[layer.z] = getNewTransitInfoToLayer(layer);
+	}
 	if (node.transitInfo[layer.z].enabled) {
 		_nodeInfoEditorTransitEnableChecker.checked = true;
 		_nodeInfoEditorTransitNodeChooser.disabled = false;

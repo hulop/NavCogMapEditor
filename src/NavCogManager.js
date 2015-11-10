@@ -363,11 +363,11 @@ function saveLocally() {
 function saveToDowndloadFile() {
 	prepareData();
 	var filename = "NavCogMapData.json";
-    var blob = new Blob([JSON.stringify(_data)], { type: 'text/json;charset=utf-8;' });
-    downloadFile(blob, filename);
+    downloadFile(JSON.stringify(_data), filename);
 }
 
-function downloadFile(blob, filename) {    
+function downloadFile(data, filename) {    
+	var blob = new Blob([data], { type: 'text/json;charset=utf-8;' });
     if (navigator.msSaveBlob) {
         navigator.msSaveBlob(blob, filename);
     } else {
@@ -376,16 +376,21 @@ function downloadFile(blob, filename) {
             var url = URL.createObjectURL(blob);
             link.setAttribute("href", url);
             link.setAttribute("download", filename);
-            link.style = "visibility:hidden";
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+        } else {        	
+        	link.href     = 'data:attachment/json,' + data;
         }
+        link.style = "visibility:hidden";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     }
 }
 
 function removeAllData() {
-	localStorage.removeItem(_dataStorageLabel);
+	//localStorage.removeItem(_dataStorageLabel);
+	//$db.clearData();
+	_data = {};
+	$editor.trigger("dataLoaded");
 }
 
 function addOptionToSelect(text, chooser) {
