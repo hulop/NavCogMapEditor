@@ -32,9 +32,9 @@
 	return newNode;
 }
 
-function renderNodesInLayer(layer) {
+function renderNodesInLayer(layer, silent) {
 	for (var nodeID in layer.nodes) {
-		renderNode(layer.nodes[nodeID]);
+		renderNode(layer.nodes[nodeID], silent);
 	}
 	_currentNode = null;
 }
@@ -77,7 +77,7 @@ function setImgForNode(node) {
 	};
 }
 
-function renderNode(node) {
+function renderNode(node, silent) {
 	if (_nodeMarkers[node.id]) {
 		setImgForNode(node);
 		_nodeMarkers[node.id].setMap(_map);
@@ -109,6 +109,7 @@ function renderNode(node) {
 		nodeMarker.setMap(_map);
 		nodeMarker.id = node.id;
 		_nodeMarkers[nodeMarker.id] = nodeMarker;
+		if (!silent) {
 		nodeMarker.addListener("click", function(e) {
 			switch (_currentTopoEditState) {
 				case TopoEditState.Doing_Nothing:
@@ -173,10 +174,12 @@ function renderNode(node) {
 				_edgePolylines[edgeID].setPath(path);
 			}
 		});
+		}
 	}
 }
 
 function showNodeInfo(node) {
+	_edgeInfoWindow.close();
 	_nodeInfoWindow.setPosition(new google.maps.LatLng(node.lat, node.lng));
 	_nodeInfoWindow.open(_map);
 	if (_nodeInfoEditorIDInput == null) {

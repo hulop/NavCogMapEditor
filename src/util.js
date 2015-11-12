@@ -284,6 +284,8 @@ $i18n = (function() {
 				for (var i = 0; i < el.childNodes.length; i++) {
 					traverse(el.childNodes[i], replace);
 				}
+				if (el.title) el.title = replace(el.title);
+				if (el.value) el.value = replace(el.value);
 			}
 		}
 		traverse(document.body, function(text) {
@@ -331,6 +333,10 @@ $i18n = (function() {
 $util = $({}).extend({
 	getSelectedOption : function(select_id) {
 		var select = document.getElementById(select_id);
+		if (!select) {
+			console.log("getSelectedOption - error: select is null ("+select_id+")");
+			return null;
+		}
 		var selected = select.options[select.selectedIndex];
 		return selected;
 	},
@@ -388,6 +394,52 @@ $util = $({}).extend({
 		} else {
 			return len + " KB";
 		}
+	},
+	genUUID: function() {
+		return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+		    var r = crypto.getRandomValues(new Uint8Array(1))[0]%16|0, v = c == 'x' ? r : (r&0x3|0x8);
+		    return v.toString(16);
+		});
+	},
+	getTotalLength: function() {
+		var len = 0;
+		for(var l in _layers) {
+			var layer = _layers[l];
+		    for(var e in layer.edges) {
+				var edge = layer.edges[e];
+				var n1 = layer.nodes[edge.node1].infoFromEdges[e].y;
+				var n2 = layer.nodes[edge.node2].infoFromEdges[e].y;
+				var d = Math.abs(n2-n1);
+				len += d;
+			}
+		}
+		return len;
+	},
+	getTotalSampleFileSize: function() {
+		var len = 0;
+		for(var l in _layers) {
+			var layer = _layers[l];
+		    for(var e in layer.edges) {
+				var edge = layer.edges[e];
+				if (edge.dataFile) {
+					len += edge.dataFile.length;
+				}
+			}
+		}
+		return len/1024/1024+" MB";
+	},
+	getTotalSamples: function() {
+		var len = 0;
+		for(var l in _layers) {
+			var layer = _layers[l];
+		    for(var e in layer.edges) {
+				var edge = layer.edges[e];
+				if (edge.dataFile) {
+					len += edge.dataFile.split("\n").length;
+				}
+			}
+		}
+		return len;
 	}
 });
 

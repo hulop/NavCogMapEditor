@@ -13,6 +13,7 @@ $NC.loc = (function() {
 	};
 	
 	var current_loc;
+	var isAdvanced = false;
 	
 	function addLocalization(opt) {
 		var loc = getNewLocalization(opt);
@@ -116,6 +117,56 @@ $NC.loc = (function() {
 			$target.append("<br>");
 		}
 	}
+	function changeMode() {
+		if (isAdvanced && window._isAdvanced) {
+			$(document.body).addClass("advanced");
+			$("#localization-tab").removeClass("hidden");
+
+			// convert data from v1.0 -> v1.1
+			for(var l in _layers) {
+				console.log(l);
+				for(var e in _layers[l].edges) {
+					var edge = _layers[l].edges[e];
+					if (edge.dataFile && !edge.localizationID) {
+						var id = $util.genUUID();
+						_localizations.push({
+							name: "Edge "+edge.id+" (1D)",
+							dataFile: edge.dataFile,
+							maxKnnDist: edge.maxKnnDist,
+							minKnnDist: edge.minKnnDist,
+							type: "1D_Beacon",
+							id: id
+						});
+						edge.localizationID = id;
+					}
+					delete edge.dataFile;
+					delete edge.maxKnnDist;
+					delete edge.minKnnDist;
+				}
+			}
+		} else {
+			if (isAdvanced) {
+				alert($i18n.t("This editor is not support advanced data"));
+			}
+			$(document.body).removeClass("advanced");
+			$("#localization-tab").addClass("hidden");
+
+			
+			// v1.0 and v1.1 compatible data (duplicate data)
+			for(var l in _layers) {
+				console.log(l);
+				for(var e in _layers[l].edges) {
+					var edge = _layers[l].edges[e];
+					if (edge.localizationID) {
+						var loc = getById(edge.localizationID);
+						edge.dataFile = loc.dataFile;
+						edge.maxKnnDist = loc.maxKnnDist;
+						edge.minKnnDist = loc.minKnnDist;
+					}
+				}
+			}
+		}
+	}
 
 	$editor.on("localizationChange", function(e, loc) {
 		showLocalizations();
@@ -142,7 +193,35 @@ $NC.loc = (function() {
 				removeLocalization(current_loc);
 			}
 		});
+		$("#advanced-mode-check").change(function() {
+			isAdvanced = ($("#advanced-mode-check").attr("checked") == "checked");
+			changeMode();
+			showLocalizations();
+		});
+		
+		if (location.search.match(/advanced/)) {
+			$("#advanced-mode-check").parent().removeClass("hidden");
+			_isAdvanced = true;
+		}
 	});
+	
+	function getById(id) {
+		var ret = null;
+		_localizations.forEach(function(l) {
+			if (l.id == id) { ret = l }
+		});
+		return ret;
+	}
+	
+	function getNameById(id) {
+		var ret = getById(id);
+		return ret?ret.name:null;
+	}
 
-	return {};
+	return {
+		getNameById: getNameById,
+		getById: getById,
+		isAdvanced: function() { return isAdvanced;},
+		setAdvanced: function(flag) {isAdvanced = flag;}
+	};
 })();

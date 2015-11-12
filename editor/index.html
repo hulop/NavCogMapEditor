@@ -50,11 +50,11 @@ SOFTWARE.
 
 <body style="display: none">
 	<ul class='tabs'>
-		<li><a href='#tab0'>$(File)</a></li>
-		<li><a href='#tab1'>$(Map)</a></li>
-		<li><a href='#tab2'>$(Topology)</a></li>
-		<li><a href='#tab4'>$(Localization)</a></li>
-		<li><a href='#tab3'>$(Beacons)</a></li>
+		<li><a href='#tab0'>$(File)</a></li
+		><li><a href='#tab1'>$(Map)</a></li
+		><li><a href='#tab2'>$(Topology)</a></li
+		><li><a href='#tab4' class="hidden" id="localization-tab">$(Localization)</a></li
+		><li><a href='#tab3'>$(Beacons)</a></li>
 	</ul>
 
 	<div id="tabs-container">
@@ -75,27 +75,32 @@ SOFTWARE.
 			<fieldset class="center">
 				<legend>UI Language Setting</legend>
 				<!-- Do not internationalize -->
-				<select id="language_select">
+				<select id="language-select">
 				</select>
 			</fieldset>
 
 			<fieldset class="center">
 				<legend>$(i18n)</legend>
-				$(Target Language): <select id="i18n_language_selection">
+				$(Target Language): <select id="i18n-language-selection">
 				</select>
-				<button id="i18n_language_delete_button">$(Delete)</button>
-				<br> <select id="i18n_language_list">
+				<button id="i18n-language-delete-button">$(Delete)</button>
+				<br> <select id="i18n-language-list">
 				</select>
-				<button id="i18n_language_add_button">$(Add)</button>
+				<button id="i18n-language-add-button">$(Add)</button>
+			</fieldset>
+			
+			<fieldset class="center hidden">
+				<legend>$(Advanced Mode)</legend>
+				<label for="advanced-mode-check">$(Advanced Mode): </label>
+				<input type="checkbox" id="advanced-mode-check">
 			</fieldset>
 
-			<fieldset class="center">
+			<fieldset class="center" title="$(Data will be saved in your browser)">
 				<legend>$(Save Locally)</legend>
 				<button type="button" onclick="saveLocally()">$(Save)</button>
-			</fieldset>
+			</fieldset>			
 			
-			
-			<fieldset>
+			<fieldset title="$(Clear data in your browser)">
 				<legend>$(Clear)</legend>
 				<div style="text-align: center">
 					<button type="button" onclick="removeAllData()">$(Clear)</button>

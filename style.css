@@ -70,15 +70,21 @@ p, h3 {
 }
 
 .tabs a {
-  padding:5px 10px;
+  padding:3px 7px;
+  line-height: 24px;
   display:inline-block;
   background:#666;
   color:#fff;
   text-decoration:none;
+  border-right: 1px solid gray;
 }
 
 .tabs a.hidden {
 	display:none;
+}
+
+.hidden {
+	display: none;
 }
 
 span.attr {
@@ -119,10 +125,22 @@ fieldset {
 label {
   display: inline-block;
   text-align: right;
-  width: 7em;
+  width: 8em;
 }
 
+#edge-info-advanced {
+	display: none;
+}
+.advanced #edge-info-advanced {
+	display: block;
+}
 
+#edge-info-basic {
+	display: block;
+}
+.advanced #edge-info-basic {
+	display: none;
+}
 
 form {
   padding: 5px;

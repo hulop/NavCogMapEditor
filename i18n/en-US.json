@@ -115,6 +115,11 @@
 "Floors": "Floors",
 "File Name": "File Name", 
 "Size": "Size",
-"Are you sure to delete?": "Are you sure to delete?"
+"Are you sure to delete?": "Are you sure to delete?",
 
+"Data will be saved in your browser": "Data will be saved in your browser",
+"Clear data in your browser":"Clear data in your browser",
+
+"Advanced Mode": "Advanced Mode",
+"This editor is not support advanced data":"This editor is not support advanced data"
 }

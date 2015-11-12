@@ -30,7 +30,8 @@ var EditMode = {
 	File : 0,
 	Map : 1,
 	Topo : 2,
-	Beacon : 3
+	Beacon : 3,
+	Localization : 4
 };
 var TopoEditState = {
 	Doing_Nothing : 3,
@@ -66,6 +67,7 @@ var _maxBeaconID = 0;
 var _lastUUID = "";
 var _lastMajorID = "";
 var _lastMinorID = 0;
+var _isAdvanced = false;
 
 // ui datas
 var _regionOverlays = {};
@@ -243,7 +245,7 @@ $(document).ready(function() {
 		}
 	}
 	$i18n.setUILanguage(language);
-	$util.setOptions("language_select", $i18n.getLanguages(), language);
+	$util.setOptions("language-select", $i18n.getLanguages(), language);
 	
 
 	// set event handler
@@ -253,25 +255,25 @@ $(document).ready(function() {
 				$("#"+button).attr("disabled", $util.getSelectedOption(select).value == "");
 			}
 		}
-		check("i18n_language_list", "i18n_language_add_button");
-		check("i18n_language_selection", "i18n_language_delete_button");
+		check("i18n-language-list", "i18n-language-add-button");
+		check("i18n-language-selection", "i18n-language-delete-button");
 	}
-	$("#i18n_language_list").change(checkUI);
+	$("#i18n-language-list").change(checkUI);
 
 	$editor.on("languageChange", function(e, languages) {
 		console.log(["languageChange", $.extend({"" : $i18n.t("Base")}, languages)]);
-		$util.setOptions("i18n_language_selection", $.extend({"" : $i18n.t("Base")}, languages), $i18n.getLanguageCode());
+		$util.setOptions("i18n-language-selection", $.extend({"" : $i18n.t("Base")}, languages), $i18n.getLanguageCode());
 		checkUI();
 	});
 
-	$("#i18n_language_selection").change(function() {
-		var option = $util.getSelectedOption('i18n_language_selection');
+	$("#i18n-language-selection").change(function() {
+		var option = $util.getSelectedOption('i18n-language-selection');
 		$i18n.setLanguageCode(option.value);
-		$("#i18n_language_delete_button").attr("disabled", (option.value == ""));
+		$("#i18n-language-delete-button").attr("disabled", (option.value == ""));
 		$editor.trigger("buildingChange");
 	});
-	$("#i18n_language_delete_button").click(function() {
-		var option = $util.getSelectedOption('i18n_language_selection');
+	$("#i18n-language-delete-button").click(function() {
+		var option = $util.getSelectedOption('i18n-language-selection');
 		var code = option.value;
 		$i18n.deleteLanguageCode(code);
 		$i18n.setLanguageCode("");
@@ -280,8 +282,8 @@ $(document).ready(function() {
 		$editor.trigger("languageChange", _data.languages);
 		$editor.trigger("buildingChange");
 	});
-	$("#i18n_language_add_button").click(function() {
-		var option = $util.getSelectedOption('i18n_language_list');
+	$("#i18n-language-add-button").click(function() {
+		var option = $util.getSelectedOption('i18n-language-list');
 		var code = option.value;
 		var name = option.innerHTML;
 		$i18n.addLanguageCode(code, name);
@@ -290,8 +292,8 @@ $(document).ready(function() {
 		$editor.trigger("languageChange", _data.languages);
 		$editor.trigger("buildingChange");
 	});
-	$("#language_select").change(function(e) {
-		var sel = $("#language_select")[0];
+	$("#language-select").change(function(e) {
+		var sel = $("#language-select")[0];
 		var lang = (sel.options[sel.selectedIndex].value);
 		if (window.localStorage) {
 			window.localStorage["LANGUAGE"] = lang;
@@ -359,9 +361,8 @@ $i18n.on("initialized", function(e, language) {
 	all = $.extend({
 		"" : $i18n.t("Select Language")
 	}, all);
-	$util.setOptions("i18n_language_list", all);
+	$util.setOptions("i18n-language-list", all);
 	
 	$i18n.scan();
-	$(document.body).show();
 	loaded();
 });

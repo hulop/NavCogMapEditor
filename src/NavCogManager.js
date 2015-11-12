@@ -28,7 +28,7 @@ $db.on("dbopen", function(e) {
 	});
 });
 
- function loaded() {
+function loaded() {
 	$db.open()
 	//reloadData();
 	initKeyboardEvent();
@@ -99,6 +99,9 @@ $editor.on("dataLoaded", function() {
 		_map.setZoom(_data.zoom || 20);
 	}
 	
+	$("#advanced-mode-check").attr("checked", _data.isAdvanced);
+	$("#advanced-mode-check").trigger("change");
+	
 	$editor.trigger("derender");
 	$editor.trigger("layerChange");
 	$editor.trigger("buildingChange");
@@ -106,6 +109,8 @@ $editor.on("dataLoaded", function() {
 	$editor.trigger("languageChange", _data.languages);
 
 	renderLayer(_currentLayer);
+
+	$(document.body).show();
 });
 
 $editor.on("layerChange", function(e, layer) {
@@ -343,6 +348,7 @@ $(window).on("hashchange", function(e) {
 	if(hash == "#tab1") { mode = EditMode.Map; }
 	if(hash == "#tab2") { mode = EditMode.Topo; }
 	if(hash == "#tab3") { mode = EditMode.Beacon; }
+	if(hash == "#tab4") { mode = EditMode.Localization; }
 	$editor.trigger("modeChange", mode);
 });
 
@@ -356,6 +362,7 @@ function prepareData() {
 	_data["lastMajorID"] = _lastMajorID;
 	_data["lastMinorID"] = _lastMinorID;
 	_data["localizations"] = _localizations;
+	_data["isAdvanced"] = $NC.loc.isAdvanced();
 }
 
 function saveLocally() {

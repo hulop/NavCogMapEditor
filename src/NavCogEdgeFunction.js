@@ -44,14 +44,14 @@ $editor.on("derender", function(e, layer) {
 	_currentEdge = null;
 });
 
-function renderEdgesInLayer(layer) {
+function renderEdgesInLayer(layer, silent) {
 	for (var edgeID in layer.edges) {
-		renderEdge(layer.edges[edgeID]);
+		renderEdge(layer.edges[edgeID], silent);
 	}
 	_currentEdge = null;
 }
 
-function renderEdge(edge) {
+function renderEdge(edge, silent) {
 	if (_edgePolylines[edge.id]) {
 		_edgePolylines[edge.id].setMap(_map);
 	} else {
@@ -67,14 +67,17 @@ function renderEdge(edge) {
 		});
 		edgeLine.id = edge.id;
 		_edgePolylines[edgeLine.id] = edgeLine;
-		edgeLine.addListener("click", function(e) {
-			_currentEdge = _currentLayer.edges[this.id];
-			showEdgeInfo(_currentEdge, e.latLng);
-		});
+		if (!silent) {
+			edgeLine.addListener("click", function(e) {
+				_currentEdge = _currentLayer.edges[this.id];
+				showEdgeInfo(_currentEdge, e.latLng);
+			});
+		}
 	}
 }
 
 function showEdgeInfo(edge, pos) {
+	_nodeInfoWindow.close();
 	_edgeInfoWindow.setPosition(pos);
 	_edgeInfoWindow.open(_map);
 	if (_edgeInfoEditorIDInput == null) {
@@ -181,6 +184,43 @@ function showEdgeInfo(edge, pos) {
 			_edgeInfoEditorLenInput.value = len;
 			_currentEdge.len = len;
 		});
+
+		if ($NC.loc.isAdvanced() && _currentEdge.localizationID) {
+			var loc = $NC.loc.getById(_currentEdge.localizationID);
+
+			$util.setOptions("edge-info-localization", _localizations, _currentEdge.localizationID, 
+					function(i){return _localizations[i].id},
+					function(v, i){return v.name});
+		}
+		function checkFloor() {
+			var opt = $util.getSelectedOption("edge-info-localization");
+			var loc = $NC.loc.getById(opt.value);
+			if (loc) {
+				_currentEdge.localizationID = loc.id;
+			} else {
+				delete _currentEdge.localizationID;
+			}
+			if (loc.floors) {
+				$("#edge-info-localization-floor").parent().removeClass("hidden");
+				var floors = loc.floors.split(",");
+				$util.setOptions("edge-info-localization-floor", floors, _currentEdge.localizationFloor,
+						function(i){return floors[i];}, $util.first);					
+			} else {
+				$("#edge-info-localization-floor").empty();
+				$("#edge-info-localization-floor").parent().addClass("hidden");
+			}
+			$("#edge-info-localization-floor").trigger("change");
+		}
+		checkFloor();
+		$("#edge-info-localization").change(checkFloor);
+		$("#edge-info-localization-floor").change(function() {
+			var opt = $util.getSelectedOption("edge-info-localization-floor");
+			if (opt) {
+				_currentEdge.localizationFloor = opt.value;
+			} else {
+				delete _currentEdge.localizationFloor;
+			}
+		});
 	};
 
 	_edgeInfoEditorIDInput.value = edge.id;
@@ -197,6 +237,8 @@ function showEdgeInfo(edge, pos) {
 	_edgeInfoEditorNodeID2.value = edge.node2;
 	_edgeInfoEditorInfo1.value = edge[$i18n.k("infoFromNode1")];
 	_edgeInfoEditorInfo2.value = edge[$i18n.k("infoFromNode2")];
+	
+	
 }
 
 function saveEdgeInfo() {
