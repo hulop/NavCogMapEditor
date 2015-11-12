@@ -143,6 +143,14 @@ function getNewBeacon(opt) {
 	}, opt);
 }
 
+function getNewLocalization(opt) {
+	return $.extend({
+		name: "",
+		dataFile: "",
+		type: ""
+	}, opt);
+}
+
 /*
  * IndoorMapOverlay displays an indoor map image on a google map.
  * It calculates bounds from @width, @height, and center point (@lat, @lng)

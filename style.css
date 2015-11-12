@@ -77,6 +77,20 @@ p, h3 {
   text-decoration:none;
 }
 
+.tabs a.hidden {
+	display:none;
+}
+
+span.attr {
+	width: 200px;
+	display: inline-block;
+  text-overflow: ellipsis;
+  -webkit-text-overflow: ellipsis;
+  -o-text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+
 .tabs a.active {
   background:#bbb;
   color:#000;
@@ -85,6 +99,11 @@ p, h3 {
 .tab {
 	width: 100%;
 	display: none;
+	line-height: 1.5;
+}
+
+.tab input[type=file] {
+	width: 200px;
 }
 
 fieldset {
@@ -123,7 +142,7 @@ button {
 	padding: 3px 8px;
 }
 
-.addbutton {
+.rightbutton {
 	float: right;
 	margin-left: 1em;
 }

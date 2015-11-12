@@ -104,6 +104,19 @@
 "i18n": "国際化",
 "Target Language": "対象言語",
 "Select Language": "言語を選択してください",
-"Base": "標準"
+"Base": "標準",
+
+"Add Localization": "位置推定の追加",
+"Edit Localization": "位置推定の編集",
+"Localization": "位置推定",
+"1D_Beacon": "ビーコン (1次元)",
+"2D_Beacon_PDR": "ビーコン + センサー (2次元)",
+"Clear": "Clear",
+"ex.) Edge 1 (1D)": "例) エッジ1 (1次元)",
+"Zip File": "Zipファイル",
+"Floors": "階",
+"File Name": "ファイル名", 
+"Size": "サイズ",
+"Are you sure to delete?": "Are you sure to delete?"
 
 }

@@ -334,18 +334,21 @@ $util = $({}).extend({
 		var selected = select.options[select.selectedIndex];
 		return selected;
 	},
-	setOptions : function(id, keyValues, select, kfunc, vfunc) {
+	setOptions : function(id, values, select, kfunc, vfunc) {
 		var $sel = (id.constructor == String) ? $("#" + id) : $(id);
-		var kfunc = kfunc || function(i) {
-			return i
-		};
-		var vfunc = vfunc || function(i) {
-			return i
-		};
+		var kfunc = kfunc || $util.first;
+		var vfunc = vfunc || $util.first;
 		$sel.empty();
-		for ( var key in keyValues) {
-			var $opt = $("<option>").val(kfunc(key)).text(vfunc(keyValues[key])).attr("selected", select == key);
-			$sel.append($opt);
+		if (values instanceof Array) {
+			values.forEach(function(v, i) {
+				var $opt = $("<option>").val(kfunc(i)).text(vfunc(v, i)).attr("selected", select == kfunc(i));
+				$sel.append($opt);
+			});
+		} else if (values instanceof Object) {
+			for ( var key in values) {
+				var $opt = $("<option>").val(kfunc(key)).text(vfunc(values[key], key)).attr("selected", select == kfunc(key));
+				$sel.append($opt);
+			}
 		}
 	},
 	renewSelectWithProertyOfArray : function(array, property, chooser, select) {
@@ -367,6 +370,24 @@ $util = $({}).extend({
 	getLangAttr : function(obj, key, code) {
 		code = code || $i18n.getLanguageCode();
 		return obj[$i18n.getKeyCode(key, code)];
+	},
+	first: function(first) {
+		return first;
+	},
+	second: function(first, second) {
+		return second;
+	},
+	getSizeString: function(len) {
+		if (len == 0) {
+			return "0 byte";
+		}
+		len = parseInt((len / 1024)*100)/100;
+		if (len >= 1024) {
+			len = parseInt((len / 1024)*100)/100;
+			return len + " MB";
+		} else {
+			return len + " KB";
+		}
 	}
 });
 

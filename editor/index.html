@@ -45,6 +45,7 @@ SOFTWARE.
 <script src="./src/NavCogNodeFunction.js"></script>
 <script src="./src/NavCogEdgeFunction.js"></script>
 <script src="./src/NavCogBeaconFunction.js"></script>
+<script src="./src/NavCogLocalization.js"></script>
 </head>
 
 <body style="display: none">
@@ -52,6 +53,7 @@ SOFTWARE.
 		<li><a href='#tab0'>$(File)</a></li>
 		<li><a href='#tab1'>$(Map)</a></li>
 		<li><a href='#tab2'>$(Topology)</a></li>
+		<li><a href='#tab4'>$(Localization)</a></li>
 		<li><a href='#tab3'>$(Beacons)</a></li>
 	</ul>
 
@@ -66,7 +68,7 @@ SOFTWARE.
 				<legend>$(Export Map Data) </legend>
 				<label for="export-data">$(For App) </label>
 				<button type="button" id="export-data" onclick="saveToDowndloadFile()">$(Download)</button>
-				<br> <br> <label for="export-geojson">$(GeoJSON) </label>
+				<br> <label for="export-geojson">$(GeoJSON) </label>
 				<button type="button" id="export-geojson" onclick="saveToDowndloadGeoJSON()" disabled>$(Download)</button>
 			</fieldset>
 
@@ -82,7 +84,7 @@ SOFTWARE.
 				$(Target Language): <select id="i18n_language_selection">
 				</select>
 				<button id="i18n_language_delete_button">$(Delete)</button>
-				<br> <br> <select id="i18n_language_list">
+				<br> <select id="i18n_language_list">
 				</select>
 				<button id="i18n_language_add_button">$(Add)</button>
 			</fieldset>
@@ -110,23 +112,23 @@ SOFTWARE.
 			<fieldset>
 				<legend>$(Add New Layer)</legend>
 				$(Z-Index): <input type="text" style="width: 25px" id="map-editor-layer-input">
-				<button class="addbutton" type="button" onclick="addNewLayer()">$(Add Layer)</button>
+				<button class="rightbutton" type="button" onclick="addNewLayer()">$(Add Layer)</button>
 			</fieldset>
 
 			<fieldset>
 				<legend>$(Add New Region To Current Layer)</legend>
-				$(Layer) : <select id="map-editor-layer-chooser"></select><br> <br> <label for="region-image-chooser">$(Image File):</label> <input
+				$(Layer) : <select id="map-editor-layer-chooser"></select><br> <label for="region-image-chooser">$(Image File):</label> <input
 					type="file" id="region-image-chooser"><br> <label for="region-name-input">$(Region Name):</label> <input type="text"
 					id="region-name-input"><br> <label for="region-center-latitude">$(Latitude):</label> <input type="text"
 					id="region-center-latitude"><br> <label for="region-center-longitude">$(Longitude):</label> <input type="text"
 					id="region-center-longitude"><br> <span class="hint">$(Click the map to get Latitude & Longitude)</span><br>
-				<button class="addbutton" type="button" id="region-add-new-region" onclick="addNewRegion()">$(Add New Region)</button>
+				<button class="rightbutton" type="button" id="region-add-new-region" onclick="addNewRegion()">$(Add New Region)</button>
 			</fieldset>
 
 			<fieldset>
 				<legend>$(Edit Region)</legend>
 				$(Region) : <select id="region-chooser"></select>
-				<button class="addbutton" type="button" onclick="removeCurrentRegion()">$(delete)</button>
+				<button class="rightbutton" type="button" onclick="removeCurrentRegion()">$(delete)</button>
 				<fieldset class="center" id="region-position-editor">
 					<legend class="separator">$(Coordinates)</legend>
 					$[Move (5.0m)]:
@@ -195,6 +197,33 @@ SOFTWARE.
 			<fieldset>
 				<legend>$(Save Locally)</legend>
 				<div style="text-align: center">
+					<button type="button" onclick="saveLocally()">$(Save)</button>
+				</div>
+			</fieldset>
+		</div>
+
+
+		<div id='tab4' class="tab">
+			<fieldset>
+				<legend>$(Add Localization)</legend>
+				<label for="localization-name">$(Name): </label><input type="text" id="localization-name"></input><br>
+				<button class="rightbutton" id="localization-add-button">$(Add)</button>
+			</fieldset>
+			<fieldset>
+				<legend>$(Edit Localization)</legend>
+				<select id="localization-select"></select><br>
+				<label for="localization-name-edit">$(Name): </label><input type="text" id="localization-name-edit"></input><br>
+				<label for="localization-type">$(Type): </label>
+				<select id="localization-type">
+				</select><br>
+				<div id="localization-attributes" style="white-space:nowrap"></div>		
+				
+				<button class="rightbutton" id="localization-delete">$(Delete)</button>		
+			</fieldset>
+
+			<fieldset class="center">
+				<legend>$(Save Locally)</legend>
+				<div>
 					<button type="button" onclick="saveLocally()">$(Save)</button>
 				</div>
 			</fieldset>

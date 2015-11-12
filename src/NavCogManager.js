@@ -56,6 +56,7 @@ $editor.on("dataLoaded", function() {
 	_lastMajorID = _data.lastMajorID;
 	_lastMinorID = _data.lastMinorID;
 	_buildings = _data.buildings || {};
+	_localizations = _data.localizations || [];
 
 	// for backward compatibility (array -> hash change)
 	if (_buildings.constructor == Array) {
@@ -101,6 +102,7 @@ $editor.on("dataLoaded", function() {
 	$editor.trigger("derender");
 	$editor.trigger("layerChange");
 	$editor.trigger("buildingChange");
+	$editor.trigger("localizationChange");
 	$editor.trigger("languageChange", _data.languages);
 
 	renderLayer(_currentLayer);
@@ -122,6 +124,7 @@ $editor.on("buildingChange", function(e, building) {
 		$("#building_lang_name").val($util.getLangAttr(_buildings[option.value], "name"));
 	}
 });
+
 
 function initMapEvent() {
 	if (!_map) {
@@ -352,6 +355,7 @@ function prepareData() {
 	_data["lastUUID"] = _lastUUID;
 	_data["lastMajorID"] = _lastMajorID;
 	_data["lastMinorID"] = _lastMinorID;
+	_data["localizations"] = _localizations;
 }
 
 function saveLocally() {

@@ -102,8 +102,19 @@
 "i18n": "Internationalization",
 "Target Language": "Target Language",
 "Select Language": "Select Language",
-"Base": "Base"
+"Base": "Base",
 
-
+"Add Localization": "Add Localization",
+"Edit Localization": "Edit Localization",
+"Localization": "Localization",
+"1D_Beacon": "Beacon (1D)",
+"2D_Beacon_PDR": "Beacon + Sensor (2D)",
+"Clear": "Clear",
+"ex.) Edge 1 (1D)": "ex.) Edge 1 (1D)",
+"Zip File": "Zip File",
+"Floors": "Floors",
+"File Name": "File Name", 
+"Size": "Size",
+"Are you sure to delete?": "Are you sure to delete?"
 
 }
