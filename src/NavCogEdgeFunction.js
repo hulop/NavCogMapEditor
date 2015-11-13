@@ -76,6 +76,7 @@ function renderEdge(edge) {
 
 function showEdgeInfo(edge, pos) {
 	_edgeInfoWindow.setPosition(pos);
+	$NC.infoWindow.trigger("closeall");
 	_edgeInfoWindow.open(_map);
 	if (_edgeInfoEditorIDInput == null) {
 		_edgeInfoEditorIDInput = document.getElementById("edge-info-id");

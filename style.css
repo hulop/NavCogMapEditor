@@ -103,18 +103,20 @@ label {
   width: 7em;
 }
 
-
+#google-map-view label {
+	width: auto;
+}
 
 form {
   padding: 5px;
 }
 
 .labels {
-     color: white;
+     color: black;
      font-family: "Lucida Grande", "Arial", sans-serif;
-     font-size: 10px;
+     font-size: 100%;
      text-align: center;
-     width: 20px;     
+     width: 20px;
      border: 0px;
      white-space: nowrap;
    }

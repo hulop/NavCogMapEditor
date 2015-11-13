@@ -86,6 +86,7 @@ function renderBeacon(beacon) {
 
 function showBeaconInfo(beacon) {
 	_beaconInfoWindow.setPosition(new google.maps.LatLng(beacon.lat, beacon.lng));
+	$NC.infoWindow.trigger("closeall");
 	_beaconInfoWindow.open(_map);
 
 	if (_beaconInfoEditorUUID == null) {

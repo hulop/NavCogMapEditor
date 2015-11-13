@@ -104,6 +104,12 @@
 "i18n": "国際化",
 "Target Language": "対象言語",
 "Select Language": "言語を選択してください",
-"Base": "標準"
+"Base": "標準",
 
+"Clear": "クリア",
+
+"Description": "詳細",
+"Coordination on the edge": "エッジ情報の位置",
+"POI": "POI",
+"Click on the map with holding \"D\" key": "\"D\"キーを押したまま地図をクリックする。"
 }

@@ -102,8 +102,12 @@
 "i18n": "Internationalization",
 "Target Language": "Target Language",
 "Select Language": "Select Language",
-"Base": "Base"
+"Base": "Base",
 
+"Clear": "Clear",
 
-
+"Description": "Description",
+"Coordination on the edge": "Coordination on the edge",
+"POI": "POI",
+"Click on the map with holding \"D\" key": "Click on the map with holding \"D\" key"
 }
