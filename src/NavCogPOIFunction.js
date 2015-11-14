@@ -47,7 +47,8 @@ $NC.poi = (function() {
 					x: this.x,
 					y: this.y,
 					lat: this.lat,
-					lng: this.lng
+					lng: this.lng,
+					side: this.side
 				};
 			},
 			update: function() {
@@ -56,9 +57,9 @@ $NC.poi = (function() {
 				var pp = {x:this.lat, y:this.lng};
 				var d = $geom.getDirectionOfPointFromEdge(pp, n1p, n2p);
 				if (d > 0) {
-					this.direction = "right";
+					this.side = "right";
 				} else {
-					this.direction = "left";
+					this.side = "left";
 				}
 			},
 			setLatLngPoint: function(latLng) {
@@ -196,16 +197,18 @@ $NC.poi = (function() {
 				_poiInfoWindow.setPosition(new google.maps.LatLng(this.lat, this.lng));
 				$NC.infoWindow.trigger("closeall");
 				_poiInfoWindow.open(_map);
-				
+				_poiInfoWindow.target = this;
 				var me = this;
 				if (!_poiInfoWindow.initialized) {
 					_poiInfoWindow.initialized = true;
 					["name", "description", "x", "y"].forEach(function(key) {
 						$("#poi-info-"+key).on("keyup", function() {
+							var me = _poiInfoWindow.target;
 							me[key] = $("#poi-info-"+key).val();
 							me.update();
 						});
 						$("#poi-info-"+key).on("change", function() {
+							var me = _poiInfoWindow.target;
 							me[key] = $("#poi-info-"+key).val();
 							me.update();
 							me.render();
