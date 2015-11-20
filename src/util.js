@@ -409,6 +409,15 @@ $geom = {
 		return Math.sqrt(Math.pow(p1.x-p2.x, 2)+Math.pow(p1.y-p2.y,2));
 	},
 
+	getOrientation: function(p1, p2, p3) {
+		var x1 = p2.x - p1.x;
+		var y1 = p2.y - p1.y;
+		var x2 = p3.x - p1.x;
+		var y2 = p3.y - p1.y;
+		var d1 = Math.sqrt(Math.pow(x1,2)+Math.pow(y1,2));
+		var d2 = Math.sqrt(Math.pow(x2,2)+Math.pow(y2,2));
+		return Math.atan2(x1*y2-y1*x2, x1*x2+y1*y2)
+	},
 	/*
 	 * getDirectionOfPointFromEdge
 	 * returns plus if right, minus if left, 0 if on the edge

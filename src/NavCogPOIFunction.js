@@ -52,15 +52,17 @@ $NC.poi = (function() {
 				};
 			},
 			update: function() {
-				var n1p = {x:this.node1.lat, y:this.node1.lng};
-				var n2p = {x:this.node2.lat, y:this.node2.lng};
-				var pp = {x:this.lat, y:this.lng};
-				var d = $geom.getDirectionOfPointFromEdge(pp, n1p, n2p);
-				if (d > 0) {
-					this.side = "right";
-				} else {
-					this.side = "left";
+				var ll1 = this.fromPointToLatlngOnEdge();
+				var ll2 = this;
+				var ll3 = this.node2;
+				if (_map && _map.getProjection()) {
+					var p1 = _map.getProjection().fromLatLngToPoint(ll1);
+					var p2 = _map.getProjection().fromLatLngToPoint(new google.maps.LatLng(ll2.lat, ll2.lng));
+					var p3 = _map.getProjection().fromLatLngToPoint(new google.maps.LatLng(ll3.lat, ll3.lng));
+					var d = -$geom.getOrientation(p1, p2, p3) / Math.PI * 180;
+					this.orientation = d;
 				}
+				delete this.direction;
 			},
 			setLatLngPoint: function(latLng) {
 				var p = this.fromLatlngToPointOnEdge(latLng);
@@ -194,6 +196,7 @@ $NC.poi = (function() {
 			},
 
 			showInfo: function() {
+				_currentPOI = this;
 				_poiInfoWindow.setPosition(new google.maps.LatLng(this.lat, this.lng));
 				$NC.infoWindow.trigger("closeall");
 				_poiInfoWindow.open(_map);
@@ -213,10 +216,33 @@ $NC.poi = (function() {
 							me.update();
 							me.render();
 						});
-
+					});
+					$("#poi-info-optional").on("change", function() {
+						if ($("#poi-info-optional").attr("checked")) {
+							$("#poi-info-optional-settings").show();
+						} else {
+							$("#poi-info-optional-settings").hide();
+						}
+					});
+					["forward", "backward"].forEach(function(key) {
+						$("#poi-info-"+key).on("change", function() {
+							var me = _poiInfoWindow.target;
+							me[key] = $("#poi-info-"+key).attr("checked") == "checked";
+							me.update();
+							me.render();
+						});
+					});
+					$("#poi-info-delete").on("click", function() {
+						removeCurrentPOI();
 					});
 				};
+				$("#poi-info-optional-settings").hide();
+				$("#poi-info-optional").attr("checked", false);
 				$("#poi-info-edge").val(this.edge.id);
+				$("#poi-info-from-node1-id").text(this.edge.node1);
+				$("#poi-info-from-node2-id").text(this.edge.node2);
+				$("#poi-info-forward").attr("checked", me["forward"]);
+				$("#poi-info-backward").attr("checked", me["backward"]);
 				["name", "description", "x", "y"].forEach(function(key) {
 					$("#poi-info-"+key).val(me[key]);
 				});
@@ -230,7 +256,7 @@ $NC.poi = (function() {
 		var id = $util.genReadableUUID("P");
 		var data = getNewPOI({lat:latLng.lat(), lng:latLng.lng(), id:id, point:line.getPath().getAt(1), 
 			edge:edge, line:line, node1: layer.nodes[edge.node1], node2: layer.nodes[edge.node2]});		
-		var newPOI = currentPOI = new POI(data);
+		var newPOI = _currentPOI = new POI(data);
 		edge.pois = edge.pois || {};
 		edge.pois[id] = newPOI;
 		newPOI.render();
@@ -271,7 +297,7 @@ $NC.poi = (function() {
 
 	function removeCurrentPOI() {
 		_currentPOI.derender();
-		delete _currentLayer.poi[_currentPOI.id];
+		delete _currentPOI.edge.pois[_currentPOI.id];
 		_currentPOI = null;
 		_poiInfoWindow.close();
 	}

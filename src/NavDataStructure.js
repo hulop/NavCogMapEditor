@@ -147,7 +147,12 @@ function getNewPOI(opt) {
 	return $.extend({
 		name: "",
 		id: 0,
-		description: ""			
+		description: "",
+		x: 0,
+		y: 0,
+		side: "unknown",
+		forward: true,
+		backward: true
 	}, opt);
 }
 
