@@ -425,6 +425,7 @@ function prepareData() {
 	_data["localizations"] = _localizations;
 	_data["isAdvanced"] = $NC.loc.isAdvanced();
 	_data["uuids"] = _uuids;
+
 }
 
 function saveLocally() {

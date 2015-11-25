@@ -186,33 +186,6 @@ function showEdgeInfo(edge, pos) {
 			_currentEdge.len = len;
 		});
 
-		if ($NC.loc.isAdvanced() && _currentEdge.localizationID) {
-			var loc = $NC.loc.getById(_currentEdge.localizationID);
-
-			$util.setOptions("edge-info-localization", _localizations, _currentEdge.localizationID, 
-					function(i){return _localizations[i].id},
-					function(v, i){return v.name});
-		}
-		function checkFloor() {
-			var opt = $util.getSelectedOption("edge-info-localization");
-			var loc = $NC.loc.getById(opt.value);
-			if (loc) {
-				_currentEdge.localizationID = loc.id;
-			} else {
-				delete _currentEdge.localizationID;
-			}
-			if (loc.floors) {
-				$("#edge-info-localization-floor").parent().removeClass("hidden");
-				var floors = loc.floors.split(",");
-				$util.setOptions("edge-info-localization-floor", floors, _currentEdge.localizationFloor,
-						function(i){return floors[i];}, $util.first);					
-			} else {
-				$("#edge-info-localization-floor").empty();
-				$("#edge-info-localization-floor").parent().addClass("hidden");
-			}
-			$("#edge-info-localization-floor").trigger("change");
-		}
-		checkFloor();
 		$("#edge-info-localization").change(checkFloor);
 		$("#edge-info-localization-floor").change(function() {
 			var opt = $util.getSelectedOption("edge-info-localization-floor");
@@ -239,6 +212,34 @@ function showEdgeInfo(edge, pos) {
 	_edgeInfoEditorInfo1.value = edge[$i18n.k("infoFromNode1")];
 	_edgeInfoEditorInfo2.value = edge[$i18n.k("infoFromNode2")];
 	
+
+	if ($NC.loc.isAdvanced()) {
+		var loc = $NC.loc.getById(_currentEdge.localizationID);
+
+		$util.setOptions("edge-info-localization", _localizations, _currentEdge.localizationID, 
+				function(i){return _localizations[i].id},
+				function(v, i){return v.name});
+	}
+	function checkFloor() {
+		var opt = $util.getSelectedOption("edge-info-localization");
+		var loc = $NC.loc.getById(opt.value);
+		if (loc) {
+			_currentEdge.localizationID = loc.id;
+		} else {
+			delete _currentEdge.localizationID;
+		}
+		if (loc.floors) {
+			$("#edge-info-localization-floor").parent().removeClass("hidden");
+			var floors = loc.floors.split(",");
+			$util.setOptions("edge-info-localization-floor", floors, _currentEdge.localizationFloor,
+					function(i){return floors[i];}, $util.first);					
+		} else {
+			$("#edge-info-localization-floor").empty();
+			$("#edge-info-localization-floor").parent().addClass("hidden");
+		}
+		$("#edge-info-localization-floor").trigger("change");
+	}
+	checkFloor();
 	
 }
 

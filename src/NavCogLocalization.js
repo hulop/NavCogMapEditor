@@ -7,7 +7,7 @@ $NC.loc = (function() {
 			"maxKnnDist" : {name: "Max KnnDist", type: "Number", value: "999"}
 		},
 		"2D_Beacon_PDR" : {
-			"dataFile": {name: "Zip File", type: "File", filetype: "binary"},
+			"dataFile": {name: "Data File", type: "File", filetype: "text"},
 			"floors": {name: "Floors", type: "Text", placeholder: "1,2,3"}
 		}
 	};
@@ -37,8 +37,8 @@ $NC.loc = (function() {
 	}
 	function showLocalization(loc) {		
 		var option = $util.getSelectedOption("localization-select");		
-		if (option) { loc = current_loc = _localizations[option.value]; }
-		console.log(["showLocalization", loc.type]);
+		if (option) { loc = current_loc = _localizations[option.value]; }		
+		console.log(["showLocalization", loc?loc.type:null]);
 		$util.setOptions("localization-type", TYPES, loc?loc.type:null, function(i){return TYPES[i];}, $i18n.t);
 		$("#localization-name-edit").val(loc?loc.name:"").attr("placeholder", $i18n.t("ex.) Edge 1 (1D)"));
 		showAttributes(loc);
@@ -46,6 +46,7 @@ $NC.loc = (function() {
 	
 	function showAttributes(loc) {
 		loc = loc || current_loc;
+		if (!loc) {return;}
 		var type = $util.getSelectedOption("localization-type").value;
 		loc.type = type;
 		var attrs = ATTRS[type];

@@ -285,7 +285,9 @@ $i18n = (function() {
 					traverse(el.childNodes[i], replace);
 				}
 				if (el.title) el.title = replace(el.title);
-				if (el.value) el.value = replace(el.value);
+				try {
+					if (el.value) el.value = replace(el.value);
+				} catch(e){}
 			}
 		}
 		traverse(document.body, function(text) {
