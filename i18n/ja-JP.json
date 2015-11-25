@@ -123,5 +123,12 @@
 "Clear data in your browser":"ブラウザに保存されたデータを消去します",
 
 "Advanced Mode": "拡張モード",
-"This editor is not support advanced data":"このエディタは拡張モードのデータをサポートしていません"
+"This editor is not support advanced data":"このエディタは拡張モードのデータをサポートしていません",
+
+"Clear": "クリア",
+
+"Description": "詳細",
+"Coordination on the edge": "エッジ情報の位置",
+"POI": "POI",
+"Click on the map with holding \"D\" key": "\"D\"キーを押したまま地図をクリックする。"
 }

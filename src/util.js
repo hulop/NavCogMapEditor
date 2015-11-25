@@ -377,6 +377,7 @@ $util = $({}).extend({
 		code = code || $i18n.getLanguageCode();
 		return obj[$i18n.getKeyCode(key, code)];
 	},
+
 	first: function(first) {
 		return first;
 	},
@@ -394,12 +395,6 @@ $util = $({}).extend({
 		} else {
 			return len + " KB";
 		}
-	},
-	genUUID: function() {
-		return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-		    var r = crypto.getRandomValues(new Uint8Array(1))[0]%16|0, v = c == 'x' ? r : (r&0x3|0x8);
-		    return v.toString(16);
-		});
 	},
 	getTotalLength: function() {
 		var len = 0;
@@ -440,8 +435,73 @@ $util = $({}).extend({
 			}
 		}
 		return len;
+	},
+
+	genReadableUUID: function(prefix) {
+		var uuid = $util.genUUID();
+		window._uuids = window._uuids || {};
+		for(var i = 0; ; i++) {
+			if (!_uuids[prefix+i]) {
+				_uuids[prefix+i] = uuid;
+				return prefix+i;
+			}
+		}
+	},
+	getUUID: function(rid) {
+		return _uuids[rid];
+	},
+	genUUID: function() {
+		return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+		    var r = crypto.getRandomValues(new Uint8Array(1))[0]%16|0, v = c == 'x' ? r : (r&0x3|0x8);
+		    return v.toString(16);
+		});
 	}
+
 });
+
+$geom = {
+	getNearestPointOnLineSegFromPoint: function(line, p) {
+		var dx = line.p2.x - line.p1.x;
+		var dy = line.p2.y - line.p1.y;
+		var a = dx*dx + dy*dy;
+		var b = dx*(line.p1.x-p.x) + dy*(line.p1.y-p.y);
+		if (a == 0) {
+			return line.p1;
+		}
+		var t = -b/a;
+		t = (t<0)?0:t;
+		t = (t>1)?1:t;
+		var tx = line.p1.x + dx*t;
+		var ty = line.p1.y + dy*t;
+		return {x:tx, y:ty};
+	},
+	getDistanceOfTwoPoints: function(p1, p2){
+		return Math.sqrt(Math.pow(p1.x-p2.x, 2)+Math.pow(p1.y-p2.y,2));
+	},
+
+	getOrientation: function(p1, p2, p3) {
+		var x1 = p2.x - p1.x;
+		var y1 = p2.y - p1.y;
+		var x2 = p3.x - p1.x;
+		var y2 = p3.y - p1.y;
+		var d1 = Math.sqrt(Math.pow(x1,2)+Math.pow(y1,2));
+		var d2 = Math.sqrt(Math.pow(x2,2)+Math.pow(y2,2));
+		return Math.atan2(x1*y2-y1*x2, x1*x2+y1*y2)
+	},
+	/*
+	 * getDirectionOfPointFromEdge
+	 * returns plus if right, minus if left, 0 if on the edge
+	 * ex)
+	 *     *p1
+	 *
+	 * *p3 <--------- *p2
+	 * return plus value
+	 */
+	getDirectionOfPointFromEdge: function(p1, p2, p3) {
+		//console.log([p1.x, p1.y, p2.x, p2.y, p3.x, p3.y]);
+		return p1.x*(p2.y-p3.y) + p2.x*(p3.y-p1.y) + p3.x*(p1.y-p2.y);		
+	}
+};
 
 var $db = (function() {
 	var DB_NAME = 'navcog-map-editor';
@@ -520,14 +580,31 @@ var $db = (function() {
 			console.error("error", this.error);
 		};
 	}
+	
+	var overlay = null;
+	function showCover() {
+		if (!overlay) {
+			overlay = $("<div>").css({
+				"position":"absolute",
+				"left":"0px", "top":"0px", "bottom":"0px", "right":"0px",
+				"background-color": "black", "opacity": 0.3
+			}).appendTo(document.body);
+		}
+		$(document.body).css({"filter": "blur(4px)","-webkit-filter":"blur(4px)"});
+		overlay.show();
+	}
+	function hideCover() {
+		$(document.body).css({"filter": "blur(0px)","-webkit-filter":"blur(0px)"});
+		overlay.hide();
+	}
 
 	function saveData(data) {
+		showCover();
 		var obj = {
 			updated : new Date(),
-			data : data 
+			data : JSON.parse(JSON.stringify(data)) 
 		};
 		console.log(obj);
-
 		var store = getObjectStore(DB_STORE_NAME, 'readwrite');
 		var req = store.openCursor();
 		req.onsuccess = function(evt) {
@@ -539,6 +616,10 @@ var $db = (function() {
 					req.onerror = function() {
 						console.error("error", this.error);
 					};
+					req.onsuccess = function() {
+						console.log("successfully saved");
+						hideCover();
+					};
 				} else {
 					cursor["continue"]();
 				}
@@ -546,6 +627,10 @@ var $db = (function() {
 				req = store.add(obj, DATA_KEY);
 				req.onerror = function() {
 					console.error("error", this.error);
+				};
+				req.onsuccess = function() {
+					console.log("successfully saved");
+					hideCover();
 				};
 			}
 		};

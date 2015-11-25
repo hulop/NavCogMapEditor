@@ -30,14 +30,16 @@ var EditMode = {
 	File : 0,
 	Map : 1,
 	Topo : 2,
-	Beacon : 3,
+	Beacon: 3, 
 	Localization : 4
 };
 var TopoEditState = {
 	Doing_Nothing : 3,
 	Adding_Node : 4,
 	Adding_Edge : 5,
-	Draging_Node : 9
+	Adding_POI : 11,
+	Draging_Node : 9,
+	Draging_POI : 12
 };
 var BeaconEditState = {
 	Doing_Nothing : 7,
@@ -60,6 +62,19 @@ var _map = null;
 var _edgeInfoWindow = null;
 var _nodeInfoWindow = null;
 var _beaconInfoWindow = null;
+var _poiInfoWindow = null;
+
+$NC.infoWindow = (function() {	
+	return $({}).extend({
+	
+	});
+})();
+$NC.infoWindow.on("closeall", function() {
+	_edgeInfoWindow.close();
+	_nodeInfoWindow.close();
+	_beaconInfoWindow.close();
+	_poiInfoWindow.close();
+});
 
 var _maxNodeID = 0;
 var _maxEdgeID = 0;
@@ -74,6 +89,7 @@ var _regionOverlays = {};
 var _nodeMarkers = {};
 var _edgePolylines = {};
 var _beaconMarkers = {};
+var _poiMarkers = {};
 var _buildings = [];
 
 // map data
@@ -220,6 +236,7 @@ $i18n.on("initialized", function() {
 	_edgeInfoWinHtmlString = $i18n.convert(_edgeInfoWinHtmlString);
 	_nodeInfoWinHtmlString = $i18n.convert(_nodeInfoWinHtmlString);
 	_beaconInfoWinHtmlString = $i18n.convert(_beaconInfoWinHtmlString);
+	_poiInfoWinHtmlString = $i18n.convert(_poiInfoWinHtmlString);
 
 	_edgeInfoWindow = window.google ? new google.maps.InfoWindow({
 		content : _edgeInfoWinHtmlString
@@ -229,6 +246,9 @@ $i18n.on("initialized", function() {
 	}) : null;
 	_beaconInfoWindow = window.google ? new google.maps.InfoWindow({
 		content : _beaconInfoWinHtmlString
+	}) : null;
+	_poiInfoWindow = window.google ? new google.maps.InfoWindow({
+		content : _poiInfoWinHtmlString
 	}) : null;
 });
 

@@ -181,6 +181,7 @@ function renderNode(node, silent) {
 function showNodeInfo(node) {
 	_edgeInfoWindow.close();
 	_nodeInfoWindow.setPosition(new google.maps.LatLng(node.lat, node.lng));
+	$NC.infoWindow.trigger("closeall");
 	_nodeInfoWindow.open(_map);
 	if (_nodeInfoEditorIDInput == null) {
 		_nodeInfoEditorTypeChooser = document.getElementById("node-info-type-chooser");

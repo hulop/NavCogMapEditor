@@ -57,6 +57,7 @@ $editor.on("dataLoaded", function() {
 	_lastMinorID = _data.lastMinorID;
 	_buildings = _data.buildings || {};
 	_localizations = _data.localizations || [];
+	_uuids = _data.uuids || {};
 
 	// for backward compatibility (array -> hash change)
 	if (_buildings.constructor == Array) {
@@ -147,9 +148,7 @@ function initMapEvent() {
     	};
     	_mapEditorRegionLatInput.value = e.latLng.lat();
     	_mapEditorRegionLngInput.value = e.latLng.lng();
-    	_edgeInfoWindow.close();
-    	_nodeInfoWindow.close();
-    	_beaconInfoWindow.close();
+    	$NC.infoWindow.trigger("closeall");
 
 		if (_currentEditMode == EditMode.Map) {
 
@@ -161,6 +160,11 @@ function initMapEvent() {
 						addNewNode(e.latLng, _maxNodeID.toString(), _layers);
 					};
 			    	break;
+				case TopoEditState.Adding_POI:
+					if (_currentLayer && _currentEdge && _tmpEdgeLine) {
+						$NC.poi.add(e.latLng, _currentEdge, _tmpEdgeLine, _currentLayer);
+						_tmpEdgeLine = null;
+					}
 			    default:
 			    	break;
 			}
@@ -172,10 +176,70 @@ function initMapEvent() {
 			};
 		}
     });
-
+    
+    function findShortestPointFromEdge(latLng) {
+		var p = _map.getProjection().fromLatLngToPoint(latLng);
+		var lines = [];
+		for(var k in _edgePolylines) {
+			var edge = _edgePolylines[k];
+			var path = edge.getPath();
+			var p1 = _map.getProjection().fromLatLngToPoint(path.getAt(0));
+			for(var i = 1; i < path.getLength(); i++) {
+				p2 = _map.getProjection().fromLatLngToPoint(path.getAt(i));
+				lines.push({
+					p1: p1,
+					p2: p2,
+					edge: _currentLayer.edges[k]
+				});
+				p1 = p2;
+			}
+		}
+		var min = Number.MAX_VALUE;
+		var minp = null;
+		var mine = null;
+		lines.forEach(function(l) {
+			var tp = $geom.getNearestPointOnLineSegFromPoint(l, p);
+			var d = $geom.getDistanceOfTwoPoints(p, tp);
+			if (d < min) {
+				min = d;
+				minp = tp;
+				mine = l.edge;
+			}
+		});
+		if (mine == null) {
+			return null;
+		}
+		return {
+			p: _map.getProjection().fromPointToLatLng(new google.maps.Point(minp.x, minp.y)),
+			edge: mine
+		};
+    }
+    
     _map.addListener("mousemove", function(e) {
     	if (_currentEditMode == EditMode.Topo) {
-    		if (_currentTopoEditState == TopoEditState.Adding_Edge) {
+    		if (_currentTopoEditState == TopoEditState.Adding_POI) {
+    			if (_tmpEdgeLine == null) {
+    				var pe = findShortestPointFromEdge(e.latLng);
+    				if (pe == null) {
+    					return;
+    				}
+    				var path = [e.latLng, pe.p];
+    				_currentEdge = pe.edge;
+    				_tmpEdgeLine = $NC.poi.newLine(_map, path);
+    				google.maps.event.addListenerOnce(_tmpEdgeLine, "click", function(e) {
+    					if (_currentLayer && _currentEdge && _tmpEdgeLine) {
+    						$NC.poi.add(e.latLng, _currentEdge, _tmpEdgeLine, _currentLayer);
+    						_tmpEdgeLine = null;
+    					}
+    				});
+    			} else {
+    				var pe = findShortestPointFromEdge(e.latLng);
+    				var path = [e.latLng, pe.p];
+    				_currentEdge = pe.edge;
+    				_tmpEdgeLine.setPath(path);
+    			}
+    		}
+    		else if (_currentTopoEditState == TopoEditState.Adding_Edge) {
     			if (_currentEdgeEditState == EdgeEditState.Waiting_Next_Node) {
     				if (_tmpEdgeLine == null) {
     					var path = [];
@@ -243,6 +307,8 @@ function initKeyboardEvent() {
 					_currentTopoEditState = TopoEditState.Adding_Node;
 				} else if (e.keyCode == 83) { // "S" pressed
 					_currentTopoEditState = TopoEditState.Adding_Edge;
+				} else if (e.keyCode == 68) { // "D" pressed
+					_currentTopoEditState = TopoEditState.Adding_POI;
 				}
 				break;
 			case EditMode.Beacon:
@@ -256,16 +322,12 @@ function initKeyboardEvent() {
 	});
 
 	document.addEventListener("keyup", function(e) {
-		if (_currentTopoEditState == TopoEditState.Adding_Edge) {
-			if (_currentEdgeEditState != EdgeEditState.Edge_Done) {
-				if (_tmpEdgeLine) {
-					_tmpEdgeLine.setMap(null);
-				};
-				_tmpEdgeLine = null;
-				_tmpEdgeNode1 = null;
-				_tmpEdgeNode2 = null;
-			};
-		}
+		if (_tmpEdgeLine) {
+			_tmpEdgeLine.setMap(null);
+		};
+		_tmpEdgeLine = null;
+		_tmpEdgeNode1 = null;
+		_tmpEdgeNode2 = null;
 		_currentEdgeEditState = EdgeEditState.Doing_Nothing;
 		_currentTopoEditState = TopoEditState.Doing_Nothing;
 		_currentBeaconEditState = BeaconEditState.Doing_Nothing;
@@ -302,6 +364,7 @@ function renderLayer(layer) {
 	if (_currentEditMode == EditMode.Topo) {
 		renderNodesInLayer(layer);
 		renderEdgesInLayer(layer);
+		$NC.poi.renderInLayer(layer);
 	} else if (_currentEditMode == EditMode.Beacon) {
 		renderBeaconsInLayer(layer);
 	}
@@ -331,9 +394,7 @@ $(document).ready(function() {
 
 
 $editor.on("modeChange", function(e, mode) {
-	if (_edgeInfoWindow) {_edgeInfoWindow.close();}
-	if (_nodeInfoWindow) {_nodeInfoWindow.close();}
-	if (_beaconInfoWindow) {_beaconInfoWindow.close();}
+	$NC.infoWindow.trigger("closeall");
 	_currentEditMode = mode;
 	if (_currentLayer) {
 		$editor.trigger("derender");
@@ -363,6 +424,7 @@ function prepareData() {
 	_data["lastMinorID"] = _lastMinorID;
 	_data["localizations"] = _localizations;
 	_data["isAdvanced"] = $NC.loc.isAdvanced();
+	_data["uuids"] = _uuids;
 }
 
 function saveLocally() {
@@ -388,7 +450,7 @@ function downloadFile(data, filename) {
             link.setAttribute("href", url);
             link.setAttribute("download", filename);
         } else {        	
-        	link.href     = 'data:attachment/json,' + data;
+        	link.href = 'data:attachment/json,' + data;
         }
         link.style = "visibility:hidden";
         document.body.appendChild(link);
