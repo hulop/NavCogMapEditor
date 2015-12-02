@@ -203,6 +203,39 @@ $(document).ready(function() {
 			// dataFileChooser.value = "";
 		}
 	});
+	
+	document.getElementById("log-data-chooser").addEventListener("change", function(e) {
+		var file = this.files[0];
+		if (file) {
+			var fr = new FileReader();
+			fr.addEventListener("load", function(e) {
+				parseLogData(fr.result);
+			});
+			fr.readAsText(file);
+		}
+	});
+
+	function parseLogData(text) {
+		window._logData = text;
+		window._logLocations = [];
+		text.split("\n").forEach(function(line, i){
+			if (line) {
+//				console.log(line);
+				var params = line.match(/(.*?) (.*?) (.*?) (.*)/);
+				if (params && params.length==5) {
+					var date = params[1], time = params[2], msgs = params[4].split(",");
+					switch (msgs[0]) {
+					case "FoundCurrentLocation":
+						var obj = {"date":date, "time":time, "layer":msgs[2], "edge":msgs[3], "x":msgs[4], "y":msgs[5]};
+						console.log(JSON.stringify(obj));
+						_logLocations.push(obj);
+						break;
+					}
+				}
+			}
+		});
+	}
+	
 });
 
 
