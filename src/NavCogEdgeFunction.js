@@ -84,8 +84,26 @@ function renderEdge(edge) {
 					console.log(info2.x + "," + info2.y);
 					var ratio = (log.y - info1.y) / (info2.y - info1.y);
 					var lat = node1.lat + (node2.lat - node1.lat) * ratio;
-					var lng = node1.lng + (node2.lng + node1.lng) * ratio;
+					var lng = node1.lng + (node2.lng - node1.lng) * ratio;
 					console.log(ratio + "," + lat + "," + lng);
+					var marker = new MarkerWithLabel({
+				    	position: new google.maps.LatLng(lat, lng),
+				    	draggable: false,
+				    	raiseOnDrag: false,
+						icon: {
+						    	size: new google.maps.Size(25, 25),
+						    	anchor: new google.maps.Point(12.5, 12.5),
+						    	url : "./img/round-blue.png"
+						    },
+				    	shape: {
+							coords: [12.5, 12.5, 25],
+							type: "circle",
+						},
+						labelContent: log.time,
+						labelClass: "labels",
+				    	labelAnchor: new google.maps.Point(10.5, 6.25)
+				    });
+					marker.setMap(_map);
 				}
 			}); 
 		}
