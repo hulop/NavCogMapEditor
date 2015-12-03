@@ -71,42 +71,6 @@ function renderEdge(edge) {
 			_currentEdge = _currentLayer.edges[this.id];
 			showEdgeInfo(_currentEdge, e.latLng);
 		});
-		if (window._logLocations) {
-			_logLocations.forEach(function(log){
-				if (log.edge==edge.id) {
-					var node1 = _currentLayer.nodes[edge.node1], node2 = _currentLayer.nodes[edge.node2];
-					var info1 = node1.infoFromEdges[edge.id], info2 = node2.infoFromEdges[edge.id]
-					console.log(log);
-					console.log(edge);
-					console.log(node1.lat + "," + node1.lng);
-					console.log(node2.lat + "," + node2.lng);
-					console.log(info1.x + "," + info1.y);
-					console.log(info2.x + "," + info2.y);
-					var ratio = (log.y - info1.y) / (info2.y - info1.y);
-					var lat = node1.lat + (node2.lat - node1.lat) * ratio;
-					var lng = node1.lng + (node2.lng - node1.lng) * ratio;
-					console.log(ratio + "," + lat + "," + lng);
-					var marker = new MarkerWithLabel({
-				    	position: new google.maps.LatLng(lat, lng),
-				    	draggable: false,
-				    	raiseOnDrag: false,
-						icon: {
-						    	size: new google.maps.Size(25, 25),
-						    	anchor: new google.maps.Point(12.5, 12.5),
-						    	url : "./img/round-blue.png"
-						    },
-				    	shape: {
-							coords: [12.5, 12.5, 25],
-							type: "circle",
-						},
-						labelContent: log.time,
-						labelClass: "labels",
-				    	labelAnchor: new google.maps.Point(10.5, 6.25)
-				    });
-					marker.setMap(_map);
-				}
-			}); 
-		}
 	}
 }
 

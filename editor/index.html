@@ -45,6 +45,7 @@ SOFTWARE.
 <script src="./src/NavCogNodeFunction.js"></script>
 <script src="./src/NavCogEdgeFunction.js"></script>
 <script src="./src/NavCogBeaconFunction.js"></script>
+<script src="./src/NavCogLogFunction.js"></script>
 </head>
 
 <body style="display: none">
@@ -100,6 +101,10 @@ SOFTWARE.
 				</div>
 			</fieldset>
 
+			<fieldset class="center">
+				<legend>Import Log Data</legend>
+				<label for="map-log-chooser">$(Import) : </label> <input type="file" id="log-data-chooser" style="width: 200px">
+			</fieldset>
 		</div>
 
 		<div id='tab1' class="tab">
@@ -197,11 +202,6 @@ SOFTWARE.
 				<div style="text-align: center">
 					<button type="button" onclick="saveLocally()">$(Save)</button>
 				</div>
-			</fieldset>
-
-			<fieldset>
-				<legend>$(Import Log Data) </legend>
-				<label for="map-log-chooser">$(Import) : </label> <input type="file" id="log-data-chooser" style="width: 200px">
 			</fieldset>
 		</div>
 

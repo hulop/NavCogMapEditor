@@ -294,6 +294,7 @@ function renderLayer(layer) {
 	if (_currentEditMode == EditMode.Topo) {
 		renderNodesInLayer(layer);
 		renderEdgesInLayer(layer);
+		_logFunction.renderLayer(layer);
 	} else if (_currentEditMode == EditMode.Beacon) {
 		renderBeaconsInLayer(layer);
 	}
