@@ -76,13 +76,14 @@ function $NavCogLogFunction() {
 					var lat = node1.lat + (node2.lat - node1.lat) * ratio;
 					var lng = node1.lng + (node2.lng - node1.lng) * ratio;
 					// console.log(ratio + "," + lat + "," + lng);
+					var title = log.timestamp.substr(17,2); //i + 1;
 					var options = {
 						position : new google.maps.LatLng(lat, lng),
 						draggable : false,
 						raiseOnDrag : false,
-						labelContent : i + 1,
+						labelContent : title,
 						labelClass : "labels",
-						labelAnchor : new google.maps.Point(0, 30)
+						labelAnchor : new google.maps.Point(10.5, 35)
 					};
 					if (log.event == "CurrentPosition") {
 						options.icon = {
