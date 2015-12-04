@@ -8,6 +8,7 @@ function $NavCogLogFunction() {
 	var logLocations = [];
 
 	function loadFile(e) {
+		logLocations = [];
 		var file = this.files[0];
 		if (file) {
 			var fr = new FileReader();
@@ -31,15 +32,16 @@ function $NavCogLogFunction() {
 							"edge" : msgs[3],
 							"x" : msgs[4],
 							"y" : msgs[5],
-							"dist" : msgs[6]
+							"knndist" : msgs[6]
 						};
 						break;
 					case "CurrentPosition":
 						obj = {
+							"dist" : msgs[1],
 							"edge" : msgs[3],
 							"x" : msgs[4],
 							"y" : msgs[5],
-							"dist" : msgs[6]
+							"knndist" : msgs[6]
 						};
 						break;
 					}
@@ -82,8 +84,12 @@ function $NavCogLogFunction() {
 					var title = log.timestamp.substr(17, 2); // i + 1;
 					var hover = (log.event == "CurrentPosition" ? "Navigation position" : "Current location");
 					hover += "\n" + log.timestamp;
+					if (!isNaN(log.dist)) {
+						hover += "\ndistance: " + log.dist;
+					}
 					hover += "\n";
-					hover += "\npos.x: " + log.x + "\npos.y: " + log.y + "\npos.knndist: " + log.dist;
+					hover += "\npos.x: " + log.x + "\npos.y: " + log.y + "\npos.knndist: " + log.knndist;
+					hover += "\nnormalized dist: " + ((log.knndist - edge.minKnnDist) / (edge.maxKnnDist - edge.minKnnDist));
 					hover += "\n";
 					hover += "\nedge.id: " + edge.id;
 					hover += "\nedge.minKnnDist: " + edge.minKnnDist;
@@ -96,6 +102,7 @@ function $NavCogLogFunction() {
 					hover += "\nnode2.id: " + node2.id;
 					hover += "\nnode2.knnDistThres: " + node2.knnDistThres;
 					hover += "\nnode2.posDistThres: " + node2.posDistThres;
+					console.log("\n-------- " + hover)
 					var options = {
 						position : new google.maps.LatLng(lat, lng),
 						draggable : false,
