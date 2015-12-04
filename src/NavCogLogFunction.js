@@ -30,21 +30,23 @@ function $NavCogLogFunction() {
 						obj = {
 							"edge" : msgs[3],
 							"x" : msgs[4],
-							"y" : msgs[5]
+							"y" : msgs[5],
+							"dist" : msgs[6]
 						};
 						break;
 					case "CurrentPosition":
 						obj = {
 							"edge" : msgs[3],
 							"x" : msgs[4],
-							"y" : msgs[5]
+							"y" : msgs[5],
+							"dist" : msgs[6]
 						};
 						break;
 					}
 					if (obj) {
 						obj.event = msgs[0];
 						obj.timestamp = params[1] + " " + params[2];
-						console.log(JSON.stringify(obj));
+						// console.log(JSON.stringify(obj));
 						logLocations.push(obj);
 					}
 				}
@@ -68,6 +70,7 @@ function $NavCogLogFunction() {
 					var info1 = node1.infoFromEdges[edge.id], info2 = node2.infoFromEdges[edge.id]
 					// console.log(log);
 					// console.log(edge);
+					// console.log(node1);
 					// console.log(node1.lat + "," + node1.lng);
 					// console.log(node2.lat + "," + node2.lng);
 					// console.log(info1.x + "," + info1.y);
@@ -76,13 +79,30 @@ function $NavCogLogFunction() {
 					var lat = node1.lat + (node2.lat - node1.lat) * ratio;
 					var lng = node1.lng + (node2.lng - node1.lng) * ratio;
 					// console.log(ratio + "," + lat + "," + lng);
-					var title = log.timestamp.substr(17,2); //i + 1;
+					var title = log.timestamp.substr(17, 2); // i + 1;
+					var hover = (log.event == "CurrentPosition" ? "Navigation position" : "Current location");
+					hover += "\n" + log.timestamp;
+					hover += "\n";
+					hover += "\npos.x: " + log.x + "\npos.y: " + log.y + "\npos.knndist: " + log.dist;
+					hover += "\n";
+					hover += "\nedge.id: " + edge.id;
+					hover += "\nedge.minKnnDist: " + edge.minKnnDist;
+					hover += "\nedge.maxKnnDist: " + edge.maxKnnDist;
+					hover += "\n";
+					hover += "\nnode1.id: " + node1.id;
+					hover += "\nnode1.knnDistThres: " + node1.knnDistThres;
+					hover += "\nnode1.posDistThres: " + node1.posDistThres;
+					hover += "\n";
+					hover += "\nnode2.id: " + node2.id;
+					hover += "\nnode2.knnDistThres: " + node2.knnDistThres;
+					hover += "\nnode2.posDistThres: " + node2.posDistThres;
 					var options = {
 						position : new google.maps.LatLng(lat, lng),
 						draggable : false,
 						raiseOnDrag : false,
 						labelContent : title,
 						labelClass : "labels",
+						title : hover,
 						labelAnchor : new google.maps.Point(10.5, 35)
 					};
 					if (log.event == "CurrentPosition") {
