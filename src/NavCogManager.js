@@ -58,6 +58,7 @@ $editor.on("dataLoaded", function() {
 	_buildings = _data.buildings || {};
 	_localizations = _data.localizations || [];
 	_uuids = _data.uuids || {};
+	_unit = _data.unit || "feet";
 
 	// for backward compatibility (array -> hash change)
 	if (_buildings.constructor == Array) {
@@ -89,6 +90,11 @@ $editor.on("dataLoaded", function() {
 			}
 		}
 	}
+	// select unit
+	$util.selectOption("unit-of-measurement",_unit);
+	$("#unit-of-measurement").change(function(e) {
+		_unit = $util.getSelectedOption("unit-of-measurement").value;
+	});
 	
 	try {
 		_map = getNewGoogleMap();
@@ -365,6 +371,7 @@ function renderLayer(layer) {
 		renderNodesInLayer(layer);
 		renderEdgesInLayer(layer);
 		$NC.poi.renderInLayer(layer);
+		_logFunction.renderLayer(layer);
 	} else if (_currentEditMode == EditMode.Beacon) {
 		renderBeaconsInLayer(layer);
 	}
@@ -425,7 +432,7 @@ function prepareData() {
 	_data["localizations"] = _localizations;
 	_data["isAdvanced"] = $NC.loc.isAdvanced();
 	_data["uuids"] = _uuids;
-
+	_data["unit"] = _unit;
 }
 
 function saveLocally() {

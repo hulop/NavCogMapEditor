@@ -48,6 +48,7 @@ SOFTWARE.
 <script src="./src/NavCogBeaconFunction.js"></script>
 <script src="./src/NavCogLocalization.js"></script>
 <script src="./src/NavCogPOIFunction.js"></script>
+<script src="./src/NavCogLogFunction.js"></script>
 </head>
 
 <body style="display: none">
@@ -72,6 +73,14 @@ SOFTWARE.
 				<button type="button" id="export-data" onclick="saveToDowndloadFile()">$(Download)</button>
 				<br> <label for="export-geojson">$(GeoJSON) </label>
 				<button type="button" id="export-geojson" onclick="saveToDowndloadGeoJSON()" disabled>$(Download)</button>
+			</fieldset>
+
+			<fieldset class="center">
+			  <legend>$(Unit of Measurement)</legend>
+			  <select id="unit-of-measurement">
+                            <option value="feet" selected>$(Feet)</option>
+			    <option value="meter">$(Meter)</option>
+                          </select>
 			</fieldset>
 
 			<fieldset class="center">
@@ -109,6 +118,10 @@ SOFTWARE.
 				</div>
 			</fieldset>
 
+			<fieldset class="center">
+				<legend>Import Log Data</legend>
+				<label for="map-log-chooser">$(Import) : </label> <input type="file" id="log-data-chooser" style="width: 200px">
+			</fieldset>
 		</div>
 
 		<div id='tab1' class="tab">

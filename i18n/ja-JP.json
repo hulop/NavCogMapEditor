@@ -130,5 +130,9 @@
 "Description": "詳細",
 "Coordination on the edge": "エッジ情報の位置",
 "POI": "POI",
-"Click on the map with holding \"D\" key": "\"D\"キーを押したまま地図をクリックする。"
+"Click on the map with holding \"D\" key": "\"D\"キーを押したまま地図をクリックする。",
+
+"Unit of Measurement": "測量単位",
+"Meter": "メートル",
+"Feet": "フィート"
 }

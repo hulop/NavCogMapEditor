@@ -342,6 +342,15 @@ $util = $({}).extend({
 		var selected = select.options[select.selectedIndex];
 		return selected;
 	},
+	selectOption: function(id, value) {
+		var select = document.getElementById(id);
+		for(var i = 0; i < select.options.length; i++) {
+			var option = select.options[i];
+			if (option.value == value) {
+				select.selectedIndex = i;
+			}
+		}		
+	},
 	setOptions : function(id, values, select, kfunc, vfunc) {
 		var $sel = (id.constructor == String) ? $("#" + id) : $(id);
 		var kfunc = kfunc || $util.first;

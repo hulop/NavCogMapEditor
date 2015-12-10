@@ -131,6 +131,9 @@
 "POI": "POI",
 "Click on the map with holding \"D\" key": "Click on the map with holding \"D\" key",
 "Use optional settings": "Use optional settings",
-"Use when coming from node": "Use when coming from node"
+"Use when coming from node": "Use when coming from node",
 
+"Unit of Measurement": "Unit of Measurement",
+"Meter": "Meter",
+"Feet": "Feet"
 }
