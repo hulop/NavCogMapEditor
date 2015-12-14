@@ -134,5 +134,12 @@
 
 "Unit of Measurement": "測量単位",
 "Meter": "メートル",
-"Feet": "フィート"
+"Feet": "フィート",
+
+"Width": "幅",
+"Height": "高さ",
+"Rotate": "回転",
+"Scale": "スケール",
+"Anchor": "アンカー",
+"Get": "取得"
 }

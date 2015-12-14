@@ -8,7 +8,12 @@ $NC.loc = (function() {
 		},
 		"2D_Beacon_PDR" : {
 			"dataFile": {name: "Data File", type: "File", filetype: "text"},
-			"floors": {name: "Floors", type: "Text", placeholder: "1,2,3"}
+			"floors": {name: "Floors", type: "Text", placeholder: "1,2,3"},
+			"width": {name: "Width", type: "Number", placeholder: "10"},
+			"height": {name: "Height", type: "Number", placeholder: "10"},
+			"anchor": {name: "Anchor", type: "LatLng"},
+			"rotate": {name: "Rotate", type: "Number", placeholder: "-180~180", value:0},
+			"scale": {name: "Scale", type: "Number", placeholder: "1.00", value:0}
 		}
 	};
 	
@@ -114,6 +119,33 @@ $NC.loc = (function() {
 				$target.append("<br>");
 				$target.append($("<label>").text($i18n.t("Size")+": "));
 				$target.append($size);
+			}
+			else if (attrs[key].type == "LatLng") {
+				var $lat = $("<input type='text' readonly size=10>").attr("id", id+"-Lat");
+				var $lng = $("<input type='text' readonly size=10>").attr("id", id+"-Lng");
+				
+				if (loc && loc[key]) {
+					$lat.val(loc[key]["Lat"]);
+					$lng.val(loc[key]["Lng"]);
+				}
+				var $btn = $("<button>"+$i18n.t("Get")+"</button>");
+				$btn.click((function($lat, $lng) {
+					return function() {
+						alert($i18n.t("Click on the map"))
+						var event1 = google.maps.event.addListener(_map, "mousemove", function(e) {
+							$lat.val(e.latLng.lat());	
+							$lng.val(e.latLng.lng());							
+						});
+						var event2 = google.maps.event.addListenerOnce(_map, "click", function(e) {
+							$lat.val(e.latLng.lat());	
+							$lng.val(e.latLng.lng());
+							google.maps.event.removeListener(event1);
+						});
+					}					
+				})($lat,$lng));				
+				$target.append($lat);
+				$target.append($lng);
+				$target.append($btn);
 			}
 			$target.append("<br>");
 		}

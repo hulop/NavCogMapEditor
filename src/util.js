@@ -238,6 +238,8 @@ $i18n = (function() {
 				},
 				error : function(ajx, error) {
 					console.log(error);
+					alert("Language file parse error "+error);
+					$i18n.trigger("initialized", lang);
 				}
 			})
 		}
@@ -490,15 +492,66 @@ $geom = {
 		return Math.sqrt(Math.pow(p1.x-p2.x, 2)+Math.pow(p1.y-p2.y,2));
 	},
 
-	getOrientation: function(p1, p2, p3) {
+	innerProduct: function(p1,p2,p3,p4) {
 		var x1 = p2.x - p1.x;
 		var y1 = p2.y - p1.y;
-		var x2 = p3.x - p1.x;
-		var y2 = p3.y - p1.y;
-		var d1 = Math.sqrt(Math.pow(x1,2)+Math.pow(y1,2));
-		var d2 = Math.sqrt(Math.pow(x2,2)+Math.pow(y2,2));
-		return Math.atan2(x1*y2-y1*x2, x1*x2+y1*y2)
+		var x2 = p4.x - p3.x;
+		var y2 = p4.y - p3.y;
+		return x1*x2+y1*y2;
 	},
+	outerProduct: function(p1,p2,p3,p4) {
+		var x1 = p2.x - p1.x;
+		var y1 = p2.y - p1.y;
+		var x2 = p4.x - p3.x;
+		var y2 = p4.y - p3.y;
+		return x1*y2-y1*x2;
+	},
+	rotate: function(p, r, o) {
+		p = $geom.transform(p, [1,0,-o.x,0,1,-o.y]);
+		p = $geom.transform(p, [Math.cos(r),-Math.sin(r),0,Math.sin(r),Math.cos(r),0]);
+		p = $geom.transform(p, [1,0,o.x,0,1,o.y]);
+		return p;
+	},
+	transform: function(p, m) {
+		return {x: p.x*m[0]+p.y*m[1]+m[2], y: p.x*m[3]+p.y*m[4]+m[5]};
+	},
+	getAngle: function(p1, p2, p3) {
+		return $geom.getAngle4(p1, p2, p1, p3);
+	},
+	getAngle4: function(p1, p2, p3, p4) {
+		var o = $geom.outerProduct(p1,p2,p3,p4);
+		var i = $geom.innerProduct(p1,p2,p3,p4);
+		return Math.atan2(o, i);
+	},
+	ori2navcogori: function(r) { // clockwise
+		return -$geom.canonicalOrientation(r)/Math.PI*180;
+	},
+	navcogori2ori: function(r) {
+		$geom.canonicalOrientation(-r/180*Math.PI);
+	},
+	canonicalNavcogOrientation: function(r) {
+		while(r < -180 || 180 < r) {
+			if (r < -180) {
+				r += 360;
+			}
+			if (r > 180) {
+				r -= 360;
+			}
+		}
+		return r;
+	},
+	canonicalOrientation: function(r) {
+		while(r < -Math.PI || Math.PI < r) {
+			if (r < -Math.PI) {
+				r += Math.PI*2;
+			}
+			if (r > Math.PI) {
+				r -= Math.PI*2;
+			}
+		}
+		return r;
+	},
+	
 	/*
 	 * getDirectionOfPointFromEdge
 	 * returns plus if right, minus if left, 0 if on the edge

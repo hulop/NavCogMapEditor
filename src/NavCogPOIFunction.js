@@ -59,7 +59,7 @@ $NC.poi = (function() {
 					var p1 = _map.getProjection().fromLatLngToPoint(ll1);
 					var p2 = _map.getProjection().fromLatLngToPoint(new google.maps.LatLng(ll2.lat, ll2.lng));
 					var p3 = _map.getProjection().fromLatLngToPoint(new google.maps.LatLng(ll3.lat, ll3.lng));
-					var d = -$geom.getOrientation(p1, p2, p3) / Math.PI * 180;
+					var d = -$geom.getAngle(p1, p2, p3) / Math.PI * 180;
 					this.orientation = d;
 				}
 				delete this.direction;

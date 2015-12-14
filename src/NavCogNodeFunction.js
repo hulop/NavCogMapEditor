@@ -136,43 +136,40 @@ function renderNode(node, silent) {
 			}
 			
 		});
+		function updateEdgeWithNode(marker, latLng) {
+			marker.setPosition(latLng);
+			var node = _currentLayer.nodes[marker.id];
+			node.lat = latLng.lat();
+			node.lng = latLng.lng();
+			
+			for (var edgeID in node.infoFromEdges) {
+				var node1, node2;
+				if (_currentLayer.edges[edgeID].node1 == marker.id) {
+					node1 = _currentLayer.nodes[marker.id];
+					node2 = _currentLayer.nodes[_currentLayer.edges[edgeID].node2];
+				} else {
+					node1 = _currentLayer.nodes[_currentLayer.edges[edgeID].node1];
+					node2 = _currentLayer.nodes[marker.id];
+				}
+				var edge = _currentLayer.edges[edgeID];
+				
+				var path = _edgePolylines[edgeID].getPath();
+				path.setAt(0, new google.maps.LatLng({lat:node1.lat, lng:node1.lng}));
+				path.setAt(path.getLength()-1, new google.maps.LatLng({lat:node2.lat, lng:node2.lng}));				
+				//path.push({lat:node2.lat, lng:node2.lng});
+				//path.push({lat:node1.lat, lng:node1.lng});
+				_edgePolylines[edgeID].setPath(path);
+				updateEdge(edge, _edgePolylines[edgeID]);
+			}
+		}
+		
 		nodeMarker.addListener("drag", function(e) {
 			_currentTopoEditState = TopoEditState.Draging_Node;
-			nodeMarker.setPosition(e.latLng);
-			_currentLayer.nodes[this.id].lat = e.latLng.lat();
-			_currentLayer.nodes[this.id].lng = e.latLng.lng();
-			for (var edgeID in _currentLayer.nodes[this.id].infoFromEdges) {
-				var node2;
-				if (_currentLayer.edges[edgeID].node1 == this.id) {
-					node2 = _currentLayer.nodes[_currentLayer.edges[edgeID].node2];
-				} else {
-					node2 = _currentLayer.nodes[_currentLayer.edges[edgeID].node1];
-				}
-				var node1 = _currentLayer.nodes[this.id];
-				var path = [];
-				path.push({lat:node2.lat, lng:node2.lng});
-				path.push({lat:node1.lat, lng:node1.lng});
-				_edgePolylines[edgeID].setPath(path);
-			}
+			updateEdgeWithNode(nodeMarker, e.latLng);
 		});
 		nodeMarker.addListener("dragend", function(e) {
-			_currentTopoEditState = TopoEditState.Doing_Nothing;
-			nodeMarker.setPosition(e.latLng);
-			_currentLayer.nodes[this.id].lat = e.latLng.lat();
-			_currentLayer.nodes[this.id].lng = e.latLng.lng();
-			for (var edgeID in _currentLayer.nodes[this.id].infoFromEdges) {
-				var node2;
-				if (_currentLayer.edges[edgeID].node1 == this.id) {
-					node2 = _currentLayer.nodes[_currentLayer.edges[edgeID].node2];
-				} else {
-					node2 = _currentLayer.nodes[_currentLayer.edges[edgeID].node1];
-				}
-				var node1 = _currentLayer.nodes[this.id];
-				var path = [];
-				path.push({lat:node2.lat, lng:node2.lng});
-				path.push({lat:node1.lat, lng:node1.lng});
-				_edgePolylines[edgeID].setPath(path);
-			}
+			_currentTopoEditState = TopoEditState.Draging_Node;
+			updateEdgeWithNode(nodeMarker, e.latLng);
 		});
 		}
 	}

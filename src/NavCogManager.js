@@ -306,7 +306,11 @@ function initMapEvent() {
 }
 
 function initKeyboardEvent() {
+	document.addEventListener("keyup", function(e) {
+		$editor.shiftKey = e.shiftKey;
+	});
 	document.addEventListener("keydown", function(e) {
+		$editor.shiftKey = e.shiftKey;
 		switch (_currentEditMode) {
 			case EditMode.Topo:
 				if (e.keyCode == 65) { // "A" pressed

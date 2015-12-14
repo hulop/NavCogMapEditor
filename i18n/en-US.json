@@ -135,5 +135,12 @@
 
 "Unit of Measurement": "Unit of Measurement",
 "Meter": "Meter",
-"Feet": "Feet"
+"Feet": "Feet",
+
+"Width": "Width",
+"Height": "Height",
+"Rotate": "Rotate",
+"Scale": "Scale",
+"Anchor": "Anchor",
+"Get": "Get"
 }

@@ -23,7 +23,7 @@
 var _edgeInfoWinHtmlString = '<fieldset>'
 		+ '<legend>$(Edge Information)</legend>'
 		+ '$(ID): <input type="text" id="edge-info-id" style="width:30px" disabled>'
-		+ '&#160;&#160;$(Length): <input type="text" id="edge-info-len" value="0" style="width:30px" disabled> (ft)'
+		+ '&#160;&#160;$(Length): <input type="text" id="edge-info-len" value="0" style="width:30px" disabled> (<span id="edge-info-unit"></span>)'
 		+ '&#160;&#160;$(Orientation): <input type="text" id="edge-info-ori" value="90" style="width:30px"> (&#176)'
 		+ '<hr>'
 		+ '$(Start From): (<input type="text" id="edge-info-start-x" value="0" style="width:30px">, <input type="text" id="edge-info-start-y" value="0" style="width:30px">) $(To End) :( <input type="text" id="edge-info-end-x" value="0" style="width:30px">, <input type="text" id="edge-info-end-y" value="0" style="width:30px">)<br>'
