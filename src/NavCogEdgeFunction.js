@@ -99,10 +99,15 @@ function updateEdge(edge, edgeLine){
 			edge.path[i].forward = $geom.canonicalNavcogOrientation(ori+$geom.ori2navcogori(r)); 
 			edge.path[i+1].backward = $geom.canonicalNavcogOrientation(ori+$geom.ori2navcogori(r+Math.PI));
 		}
-		
-		
 	} else {
 		delete edge.path; 
+	}
+	
+	if (edge.pois) {
+		for(var key in edge.pois) {
+			var poi = edge.pois[key];
+			poi.updateLatLngPoint(poi.getLatLngPoint());
+		}
 	}
 	
 	updateEdgeLength(edge);

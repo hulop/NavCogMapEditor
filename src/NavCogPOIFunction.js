@@ -37,6 +37,40 @@ $NC.poi = (function() {
 			this.update();
 		}
 
+		function getNearestSegmentXY(path, p1) {
+			var min = Number.MAX_VALUE;
+			var mini;
+			var minp;
+			for(var i = 0; i < path.length-1; i++) {
+				var p2 = $geom.getNearestPointOnLineSegFromPoint({p1:path[i],p2:path[i+1]},p1);
+				var d = $geom.getDistanceOfTwoPoints(p1,p2);
+				if (d < min) {
+					min = d;
+					mini = i;
+					minp = p2;
+				}
+			}
+			return {p1:path[mini],p2:path[mini+1],p3:minp};
+		}
+		function getNearestSegment(path, latlng) {
+			var p1 = _map.getProjection().fromLatLngToPoint(latlng);
+			var min = Number.MAX_VALUE;
+			var mini;
+			var minp;
+			for(var i = 0; i < path.length-1; i++) {
+				var pp1 = _map.getProjection().fromLatLngToPoint(new google.maps.LatLng(path[i].lat,path[i].lng));
+				var pp2 = _map.getProjection().fromLatLngToPoint(new google.maps.LatLng(path[i+1].lat,path[i+1].lng));				
+				var p2 = $geom.getNearestPointOnLineSegFromPoint({p1:pp1,p2:pp2},p1);
+				var d = $geom.getDistanceOfTwoPoints(p1,p2);
+				if (d < min) {
+					min = d;
+					mini = i;
+					minp = p2;
+				}
+			}
+			return {p1:path[mini],p2:path[mini+1],p3:minp};
+		}
+
 		_POI.prototype = {	
 			toJSON: function() {
 				console.log("POI.toJSON is called"); 
@@ -44,31 +78,46 @@ $NC.poi = (function() {
 					id: this.id,
 					name: this.name,
 					description: this.description,
-					x: this.x,
-					y: this.y,
-					lat: this.lat,
-					lng: this.lng,
+					x: this.x,      // connected point
+					y: this.y,      // connected point
+					lat: this.lat,  // POI point
+					lng: this.lng,  // POI point
 					side: this.side
 				};
-			},
+			},		
+			/*
+			 * calculate orientation
+			 *      ll2(this)*
+			 *            ll1|
+			 *  node1 *------*------* node2
+			 */
 			update: function() {
 				var ll1 = this.fromPointToLatlngOnEdge();
 				var ll2 = this;
 				var ll3 = this.node2;
 				if (_map && _map.getProjection()) {
 					var p1 = _map.getProjection().fromLatLngToPoint(ll1);
+					if (this.edge.path) {
+						var seg = getNearestSegment(this.edge.path, ll1);
+						ll3 = seg.p2;
+					}
 					var p2 = _map.getProjection().fromLatLngToPoint(new google.maps.LatLng(ll2.lat, ll2.lng));
 					var p3 = _map.getProjection().fromLatLngToPoint(new google.maps.LatLng(ll3.lat, ll3.lng));
+					
 					var d = -$geom.getAngle(p1, p2, p3) / Math.PI * 180;
 					this.orientation = d;
 				}
 				delete this.direction;
 			},
+			// operator for the point on the edge
 			setLatLngPoint: function(latLng) {
 				var p = this.fromLatlngToPointOnEdge(latLng);
 				this.setPoint(p);
 				this.update();
 			},			
+			getLatLngPoint: function() {
+				return this.fromPointToLatlngOnEdge();
+			},
 			setPoint: function(p) {
 				this.x = Math.round(p.x*10)/10;
 				this.y = Math.round(p.y*10)/10;
@@ -77,30 +126,52 @@ $NC.poi = (function() {
 			getPoint: function() {
 				return {x: this.x, y: this.y}
 			},
-			
 			fromPointToLatlngOnEdge: function() {
-				var i1 = this.node1.infoFromEdges[this.edge.id];
-				var i2 = this.node2.infoFromEdges[this.edge.id];
-				var t = $geom.getDistanceOfTwoPoints(i1, this) / $geom.getDistanceOfTwoPoints(i1, i2);
-				
+				var mind = Number.MAX_VALUE;
+				var mini;
+				var n1 = this.node1;
+				var i1 = n1.infoFromEdges[this.edge.id];
+				var n2 = this.node2;
+				var i2 = n2.infoFromEdges[this.edge.id];				
+
+				if (this.edge.path) {
+					var seg = getNearestSegmentXY(this.edge.path, this);
+					i1 = seg.p1;
+					i2 = seg.p2;
+					n1 = seg.p1;
+					n2 = seg.p2;
+				}				
+				var t = $geom.getDistanceOfTwoPoints(i1, this) / $geom.getDistanceOfTwoPoints(i1, i2);				
 				return new google.maps.LatLng({
-					lat: this.node1.lat + (this.node2.lat - this.node1.lat) * t,
-					lng: this.node1.lng + (this.node2.lng - this.node1.lng) * t
+					lat: n1.lat + (n2.lat - n1.lat) * t,
+					lng: n1.lng + (n2.lng - n1.lng) * t
 				});
 			},
-			
 			fromLatlngToPointOnEdge: function(p) {
-				var ei1 = this.node1.infoFromEdges[this.edge.id];
-				var ei2 = this.node2.infoFromEdges[this.edge.id];				
-				var n1p = _map.getProjection().fromLatLngToPoint(new google.maps.LatLng(this.node1.lat, this.node1.lng));
-				var n2p = _map.getProjection().fromLatLngToPoint(new google.maps.LatLng(this.node2.lat, this.node2.lng));
 				var pp = _map.getProjection().fromLatLngToPoint(p);				
+				var n1 = this.node1;
+				var n2 = this.node2;
+				var ei1 = n1.infoFromEdges[this.edge.id];
+				var ei2 = n2.infoFromEdges[this.edge.id];				
+
+				if (this.edge.path) {
+					var seg = getNearestSegment(this.edge.path, p);
+					ei1 = seg.p1;
+					ei2 = seg.p2;
+					n1 = seg.p1;
+					n2 = seg.p2;
+				}				
+				
+				var n1p = _map.getProjection().fromLatLngToPoint(new google.maps.LatLng(n1.lat, n1.lng));
+				var n2p = _map.getProjection().fromLatLngToPoint(new google.maps.LatLng(n2.lat, n2.lng));
 				var t = $geom.getDistanceOfTwoPoints(n1p, pp) / $geom.getDistanceOfTwoPoints(n1p, n2p);
 				return {
 					x: ei1.x + (ei2.x - ei1.x) * t,
 					y: ei1.y + (ei2.y - ei1.y) * t
 				};
 			},
+			
+			// operators for the POI point
 			getLatLng: function() {
 				return new google.maps.LatLng({
 					lat: this.lat,
@@ -140,10 +211,7 @@ $NC.poi = (function() {
 					});
 					["drag", "dragend"].forEach(function(name) {
 						me.marker.addListener(name, function(e) {
-							this.setPosition(e.latLng);
-							me.setLatLng(e.latLng.lat(), e.latLng.lng());
-							var path = [me.fromPointToLatlngOnEdge(), me.getLatLng()];
-							me.line.setPath(path);
+							me.updatePoint(e.latLng);
 						});
 					});
 				}
@@ -169,10 +237,7 @@ $NC.poi = (function() {
 
 					["drag", "dragend"].forEach(function(name) {
 						me.marker2.addListener(name, function(e) {
-							me.setLatLngPoint(e.latLng);
-							this.setPosition(me.fromPointToLatlngOnEdge());						
-							var path = [me.fromPointToLatlngOnEdge(), me.getLatLng()];
-							me.line.setPath(path);
+							me.updateLatLngPoint(e.latLng);
 						});
 					});
 				}
@@ -187,7 +252,19 @@ $NC.poi = (function() {
 				this.line.setMap(_map);
 				this.line.setPath([this.fromPointToLatlngOnEdge(), this.getLatLng()]);
 			},
-
+			updatePosition: function(latLng) {
+				this.marker.setPosition(latLng);
+				this.setLatLng(latLng.lat(), latLng.lng());
+				var path = [this.fromPointToLatlngOnEdge(), this.getLatLng()];
+				this.line.setPath(path);
+			},
+			updateLatLngPoint: function(latLng) {
+				this.setLatLngPoint(latLng);
+				this.marker2.setPosition(this.fromPointToLatlngOnEdge());						
+				var path = [this.fromPointToLatlngOnEdge(), this.getLatLng()];
+				this.line.setPath(path);
+			},
+			
 			derender: function() {
 				console.log("derender poi");
 				if (this.marker) this.marker.setMap(null);
