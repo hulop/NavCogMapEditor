@@ -41,18 +41,18 @@ using namespace std;
 typedef struct _result {
     int edgeID;
     int testSmpNum;
-    
+
     float aveDist = 0;
     float maxDist = -1;
     float minDist = INT_MAX;
-    
+
     float avgErr = 0, maxErr = -1, minErr = 99999, worstX = 9999, worstY = 9999;
-    
+
     int lessThan1 = 0;
     int lessThan2 = 0;
     int lessThan3 = 0;
     int lessThanKey = 0;
-    
+
     float unit;
 } Result;
 
@@ -60,9 +60,10 @@ void printResult(vector<Result> results);
 Result* testAccuracy(const char *trainFilePath, const char *testFilePath, float unit);
 int getDataNumOfFeatureFile(const char *path);
 void filtData(cv::Mat &mat, int bulkSize);
+Result* testAccuracySingleRun(int beaconNum, int trainSmpNum, int testSmpNum, FILE *fpTrain, FILE *fpTest, unordered_map<int, int> featureIdxMap, float unit);
 
 int main(int argc, const char * argv[]) {
-    
+
     if (argc < 2) {
         cerr << argv[0] << " [-3f][-m] <traing_dir> <test_dir>" << endl;
         cerr << endl;
@@ -70,12 +71,12 @@ int main(int argc, const char * argv[]) {
         cerr << "-m use meter as unit" << endl;
         exit(0);
     }
-    
+
     float unit = UNIT_3FEET;
     const char * train_dir = NULL;
     const char * test_dir = NULL;
     DIR *dir;
-    
+
     for(int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-3f") == 0) {
             unit = UNIT_3FEET;
@@ -100,7 +101,7 @@ int main(int argc, const char * argv[]) {
             test_dir = argv[i];
         }
     }
-    
+
     vector<Result> results;
     struct dirent *ent;
     if ((dir = opendir(train_dir)) != NULL) {
@@ -109,7 +110,7 @@ int main(int argc, const char * argv[]) {
                 char train[1024], test[1024];
                 sprintf(train,"%s/%s",train_dir,ent->d_name);
                 sprintf(test,"%s/%s",test_dir,ent->d_name);
-                
+
                 int edgeID;
                 sscanf(ent->d_name, "edge_%d", &edgeID);
                 Result *r = testAccuracy(train, test, unit);
@@ -122,7 +123,7 @@ int main(int argc, const char * argv[]) {
         closedir (dir);
     }
     printResult(results);
-    
+
 }
 
 void printResult(vector<Result> v) {
@@ -142,7 +143,7 @@ void printResult(vector<Result> v) {
         cout << "  \"aveDistNorm\" : " << (r.aveDist - r.minDist) / (r.maxDist - r.minDist) << "," << endl;
         cout << "  \"maxDist\" : " << r.maxDist << "," << endl;
         cout << "  \"minDist\" : " << r.minDist << "," << endl;
-        
+
         cout << "  \"worstPos\" : {\"x\":" << r.worstX << ", \"y\":" << r.worstY << "}," << endl;
         cout << "  \"aveError\" : " << r.avgErr * 3 << "," << endl;
         cout << "  \"maxError\" : " << r.maxErr * 3 << "," << endl;
@@ -173,7 +174,7 @@ void printResult(vector<Result> v) {
         cout << "  \"prob1U\":\"Probability of less than 1 meter\"," << endl;
         cout << "  \"prob2U\":\"Probability of less than 2 meter\"," << endl;
         cout << "  \"prob3U\":\"Probability of less than 3 meter\"" << endl;
-        
+
     }
     cout << "}" << endl;
     cout << "}" << endl;
@@ -188,10 +189,10 @@ Result* testAccuracy(const char *trainFilePath, const char *testFilePath, float 
 
     trainSmpNum = getDataNumOfFeatureFile(trainFilePath);
     testSmpNum = getDataNumOfFeatureFile(testFilePath);
-    
+
     FILE *fpTest = fopen(testFilePath, "r");
     FILE *fpTrain = fopen(trainFilePath, "r");
-    
+
     // check Beacon Numbers
     fscanf(fpTest, "MinorID of %d Beacon Used : ", &testBeaconNum);
     fscanf(fpTrain, "MinorID of %d Beacon Used : ", &trainBeaconNum);
@@ -199,7 +200,7 @@ Result* testAccuracy(const char *trainFilePath, const char *testFilePath, float 
         cout << "Error : training data and testing data are using different beacons!" << endl;
         return NULL;
     }
-    
+
     // check Beacon IDs
     // building hashmap mapping "minorID" -> "featureIndex"
     unordered_map<int, int> featureIdxMap;
@@ -215,8 +216,22 @@ Result* testAccuracy(const char *trainFilePath, const char *testFilePath, float 
         }
         featureIdxMap[testBeaconID] = i;
     }
-    
-    // load training data to build kd-tree
+
+    //remember the current position
+    fpos_t positionTest;
+	fpos_t positionTrain;
+	fgetpos(fpTest, &positionTest);
+	fgetpos(fpTrain, &positionTrain);
+
+	//rewind each time you loop
+	fsetpos(fpTest, &positionTest);
+	fsetpos(fpTrain, &positionTrain);
+
+	return testAccuracySingleRun(beaconNum, trainSmpNum, testSmpNum, fpTrain, fpTest, featureIdxMap, unit);
+}
+
+Result* testAccuracySingleRun(int beaconNum, int trainSmpNum, int testSmpNum, FILE *fpTrain, FILE *fpTest, unordered_map<int, int> featureIdxMap, float unit) {
+	// load training data to build kd-tree
     cv::flann::Index kdTree;
     cv::Mat trainPosMat;
     cv::Mat trainFeatMat;
@@ -239,26 +254,26 @@ Result* testAccuracy(const char *trainFilePath, const char *testFilePath, float 
         }
     }
     kdTree.build(trainFeatMat, cv::flann::KDTreeIndexParams(TREE_NUM));
-    
+
     // load testing data and get accuracy
     cv::Mat testFeatData;
     cv::Mat testPosData;
     testFeatData.create(testSmpNum, beaconNum, CV_32F);
     testPosData.create(testSmpNum, 2, CV_32F);
-    
+
     vector<float> smp;
     smp.resize(beaconNum);
     vector<int> indices;
     indices.resize(KNN_NUM);
     vector<float> dists;
     dists.resize(KNN_NUM);
-    
-    
+
+
     Result* r = (Result*)calloc(1, sizeof(Result));
-    
+
     r->testSmpNum = testSmpNum;
     r->unit = unit;
-    
+
     // testing data without filtering
     vector<float> smpErrs;
     smpErrs.resize(testSmpNum);
@@ -279,12 +294,12 @@ Result* testAccuracy(const char *trainFilePath, const char *testFilePath, float 
             smp[indx] = rssi;
             testFeatData.at<float>(i, indx) = rssi;
         }
-        
+
         kdTree.knnSearch(smp, indices, dists, KNN_NUM);
         r->aveDist = r->aveDist + (dists[0] - r->aveDist) / (i + 1);
         r->maxDist = MAX(r->maxDist, dists[0]);
         r->minDist = MIN(r->minDist, dists[0]);
-        
+
         float estx = 0, esty = 0, curErr, distSum = 0;
         for (int j = 0; j < KNN_NUM; j++) {
             estx += trainPosMat.at<float>(indices[j], 0) / (dists[j] + 1e-20);
@@ -293,7 +308,7 @@ Result* testAccuracy(const char *trainFilePath, const char *testFilePath, float 
         }
         estx /= (distSum + 1e-20);
         esty /= (distSum + 1e-20);
-        
+
         curErr = sqrt((x - estx) * (x - estx) + (y - esty) * (y - esty));
         //curErr = abs(y-esty);
         smpErrs[i] = curErr;
@@ -305,35 +320,35 @@ Result* testAccuracy(const char *trainFilePath, const char *testFilePath, float 
         r->maxErr = MAX(curErr, r->maxErr);
         r->avgErr = r->avgErr + (curErr - r->avgErr) / (i + 1);
     }
-    
+
     for (int i = 0; i < testSmpNum; i++) {
         if (smpErrs[i] < 1) {
             r->lessThan1++;
         }
-        
+
         if (smpErrs[i] < 2) {
             r->lessThan2++;
         }
-        
+
         if (smpErrs[i] < 3) {
             r->lessThan3++;
         }
-        
+
         if (smpErrs[i] * 3 < KEY_ERR_METER * FEET_PER_METER) {
             r->lessThanKey++;
         }
     }
-    
+
     fclose(fpTest);
     fclose(fpTrain);
-    
+
     // clean memory
     trainPosMat.release();
     trainFeatMat.release();
     testPosData.release();
     testFeatData.release();
     kdTree.release();
-    
+
     return r;
 }
 
@@ -371,6 +386,6 @@ void filtData(cv::Mat &mat, int bulkSize) {
                 }
             }
         }
-        
+
     }
 }
