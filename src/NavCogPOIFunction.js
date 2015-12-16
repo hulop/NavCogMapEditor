@@ -82,7 +82,7 @@ $NC.poi = (function() {
 					y: this.y,      // connected point
 					lat: this.lat,  // POI point
 					lng: this.lng,  // POI point
-					side: this.side
+					orientation: this.orientation					
 				};
 			},		
 			/*
@@ -105,7 +105,7 @@ $NC.poi = (function() {
 					var p3 = _map.getProjection().fromLatLngToPoint(new google.maps.LatLng(ll3.lat, ll3.lng));
 					
 					var d = -$geom.getAngle(p1, p2, p3) / Math.PI * 180;
-					this.orientation = d;
+					this.orientation = d;					
 				}
 				delete this.direction;
 			},
@@ -211,7 +211,7 @@ $NC.poi = (function() {
 					});
 					["drag", "dragend"].forEach(function(name) {
 						me.marker.addListener(name, function(e) {
-							me.updatePoint(e.latLng);
+							me.updatePosition(e.latLng);
 						});
 					});
 				}
