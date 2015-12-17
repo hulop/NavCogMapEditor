@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		A06821CE1B6FEFF000A5F827 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A06821CD1B6FEFF000A5F827 /* main.cpp */; };
-		A0E9849A1B73D21000DB2040 /* opencv2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A0E984991B73D21000DB2040 /* opencv2.framework */; };
+		A0E9849A1B73D21000DB2040 /* .. in Frameworks */ = {isa = PBXBuildFile; fileRef = A0E984991B73D21000DB2040 /* .. */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -26,7 +26,7 @@
 /* Begin PBXFileReference section */
 		A06821CA1B6FEFF000A5F827 /* TestAccuracy */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = TestAccuracy; sourceTree = BUILT_PRODUCTS_DIR; };
 		A06821CD1B6FEFF000A5F827 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
-		A0E984991B73D21000DB2040 /* opencv2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = opencv2.framework; path = ../../opencv2.framework; sourceTree = "<group>"; };
+		A0E984991B73D21000DB2040 /* .. */ = {isa = PBXFileReference; lastKnownFileType = folder; path = ..; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -34,7 +34,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A0E9849A1B73D21000DB2040 /* opencv2.framework in Frameworks */,
+				A0E9849A1B73D21000DB2040 /* .. in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -44,7 +44,7 @@
 		A06821C11B6FEFF000A5F827 = {
 			isa = PBXGroup;
 			children = (
-				A0E984991B73D21000DB2040 /* opencv2.framework */,
+				A0E984991B73D21000DB2040 /* .. */,
 				A06821CC1B6FEFF000A5F827 /* TestAccuracy */,
 				A06821CB1B6FEFF000A5F827 /* Products */,
 			);

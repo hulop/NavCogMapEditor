@@ -25,6 +25,7 @@
 #include <algorithm>
 #include <dirent.h>
 #include <string>
+#include <vector>
 #include <opencv2/opencv.hpp>
 #define MAX_LINE_LENGTH 1024
 #define KNN_NUM 5
@@ -58,10 +59,11 @@ typedef struct _result {
 } Result;
 
 void printResult(vector<Result> results);
-Result* testAccuracy(const char *trainFilePath, const char *testFilePath, float unit);
+vector<Result> testAccuracy(const char *trainFilePath, const char *testFilePath, float unit, int edgeID);
 int getDataNumOfFeatureFile(const char *path);
 void filtData(cv::Mat &mat, int bulkSize);
-Result* testAccuracySingleRun(int beaconNum, int trainSmpNum, int testSmpNum, FILE *fpTrain, FILE *fpTest, unordered_map<int, int> featureIdxMap, float unit);
+Result* testAccuracySingleRun(long beaconNum, int trainSmpNum, int testSmpNum, FILE *fpTrain, FILE *fpTest, unordered_map<int, int> featureIdxMap, float unit, int edgeID);
+vector<Result> testAccuracyReduce(long beaconNum, int trainSmpNum, int testSmpNum, FILE *fpTrain, FILE *fpTest, unordered_map<int, int> featureIdxMap, float unit, fpos_t positionTrain, fpos_t positionTest, int edgeID);
 
 int main(int argc, const char * argv[]) {
 
@@ -131,7 +133,7 @@ void printResultSingle(Result r) {
 	cout << "  \"beacons\" : [" << endl;
 
     bool flag = 0;
-    for(std::unordered_map<int, int>::iterator it = r.beaconsUsed.begin(); it != r.beaconsUsed.end(); ++it) {
+    for(unordered_map<int, int>::iterator it = r.beaconsUsed.begin(); it != r.beaconsUsed.end(); ++it) {
         if (flag) {
             cout << "," << endl;
         }
@@ -161,7 +163,7 @@ void printResult(vector<Result> v) {
     cout << "\"unit\": " << v[0].unit << "," << endl;
     cout << "\"results\": [" << endl;
     bool flag = 0;
-    for(std::vector<Result>::iterator it = v.begin(); it != v.end(); ++it) {
+    for(vector<Result>::iterator it = v.begin(); it != v.end(); ++it) {
         Result r = (Result)*it;
         if (flag) {
             cout << "," << endl;
@@ -202,6 +204,9 @@ vector<Result> testAccuracy(const char *trainFilePath, const char *testFilePath,
     int beaconNum;
     int testSmpNum;
     int trainSmpNum;
+    
+    vector<Result> results;
+
 
     trainSmpNum = getDataNumOfFeatureFile(trainFilePath);
     testSmpNum = getDataNumOfFeatureFile(testFilePath);
@@ -214,7 +219,7 @@ vector<Result> testAccuracy(const char *trainFilePath, const char *testFilePath,
     fscanf(fpTrain, "MinorID of %d Beacon Used : ", &trainBeaconNum);
     if (testBeaconNum != trainBeaconNum) {
         cout << "Error : training data and testing data are using different beacons!" << endl;
-        return NULL;
+        return results;
     }
 
     // check Beacon IDs
@@ -228,7 +233,7 @@ vector<Result> testAccuracy(const char *trainFilePath, const char *testFilePath,
         fscanf(fpTrain, "%d,", &trainBeaconID);
         if (testBeaconID != trainBeaconID) {
             cout << "Error : training data and testing data are using different beacons!" << endl;
-            return NULL;
+            return results;
         }
         featureIdxMap[testBeaconID] = i;
     }
@@ -238,7 +243,6 @@ vector<Result> testAccuracy(const char *trainFilePath, const char *testFilePath,
     fpos_t positionTest;
 	fgetpos(fpTrain, &positionTrain);
 	fgetpos(fpTest, &positionTest);
-	vector<Result> results;
 
 	Result* result = testAccuracySingleRun(beaconNum, trainSmpNum, testSmpNum, fpTrain, fpTest, featureIdxMap, unit, edgeID);
 	results.push_back(*result);
@@ -251,7 +255,7 @@ vector<Result> testAccuracy(const char *trainFilePath, const char *testFilePath,
 	return results;
 }
 
-vector<Result> testAccuracyReduce(int beaconNum, int trainSmpNum, int testSmpNum, FILE *fpTrain, FILE *fpTest, unordered_map<int, int> featureIdxMap, float unit, fpos_t positionTrain, fpos_t positionTest, int edgeID) {
+vector<Result> testAccuracyReduce(long beaconNum, int trainSmpNum, int testSmpNum, FILE *fpTrain, FILE *fpTest, unordered_map<int, int> featureIdxMap, float unit, fpos_t positionTrain, fpos_t positionTest, int edgeID) {
 	//rewind each time you loop
 	fsetpos(fpTrain, &positionTrain);
 	fsetpos(fpTest, &positionTest);
@@ -259,22 +263,22 @@ vector<Result> testAccuracyReduce(int beaconNum, int trainSmpNum, int testSmpNum
 	vector<Result> results;
 
 	Result* bestResult = NULL;
-	unordered_map<int, int> bestMap = NULL;
+	unordered_map<int, int> bestMap;
 
 	//for each element in featureIdxMap
-    for(std::unordered_map<int, int>::iterator it = featureIdxMap.begin(); it != featureIdxMap.end(); ++it) {
+    for(unordered_map<int, int>::iterator it = featureIdxMap.begin(); it != featureIdxMap.end(); ++it) {
 		//create idxmap without it
 		unordered_map<int, int> tmpMap = featureIdxMap;
 		tmpMap.erase(it->first);
 
 		//test single run
-		Result* tmpResult = testAccuracySingleRun(tmpMap.size(), trainSmpNum, testSmpNum, *fpTrain, *fpTest, tmpMap, unit, edgeID);
+		Result* tmpResult = testAccuracySingleRun(tmpMap.size(), trainSmpNum, testSmpNum, fpTrain, fpTest, tmpMap, unit, edgeID);
 
 		//if best results
 		if(bestResult == NULL) {
 			bestResult = tmpResult;
 			bestMap = tmpMap;
-		} else if(tmpResult.lessThan1 > bestResult.lessThan1) {
+		} else if(tmpResult->lessThan1 > bestResult->lessThan1) {
 			bestResult = tmpResult;
 			bestMap = tmpMap;
 		}
@@ -284,8 +288,8 @@ vector<Result> testAccuracyReduce(int beaconNum, int trainSmpNum, int testSmpNum
 	results.push_back(*bestResult);
 
 	//if not null reduce without it
-	if(tmpMap.size() > 1) {
-		vector<Result> reducedResults = testAccuracyReduce(tmpMap.size(), trainSmpNum, testSmpNum, *fpTrain, *fpTest, bestMap, unit, positionTrain, positionTest, edgeID) {
+	if(bestMap.size() > 1) {
+        vector<Result> reducedResults = testAccuracyReduce(bestMap.size(), trainSmpNum, testSmpNum, fpTrain, fpTest, bestMap, unit, positionTrain, positionTest, edgeID);
 		results.insert(results.end(), reducedResults.begin(), reducedResults.end());
 	}
 
