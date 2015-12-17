@@ -41,6 +41,7 @@ using namespace std;
 typedef struct _result {
     int edgeID;
     int testSmpNum;
+	unordered_map<int, int> beaconsUsed;
 
     float aveDist = 0;
     float maxDist = -1;
@@ -113,17 +114,46 @@ int main(int argc, const char * argv[]) {
 
                 int edgeID;
                 sscanf(ent->d_name, "edge_%d", &edgeID);
-                Result *r = testAccuracy(train, test, unit);
-                r->edgeID = edgeID;
-                if (r != NULL) {
-                    results.push_back(*r);
-                }
+                vector<Result> partialResults = testAccuracy(train, test, unit, edgeID);
+				results.insert(results.end(), partialResults.begin(), partialResults.end());
             }
         }
         closedir (dir);
     }
     printResult(results);
 
+}
+
+void printResultSingle(Result r) {
+	cout << "{" << endl;
+	cout << "  \"edgeID\" : " << r.edgeID << "," << endl;
+	cout << "  \"testSmpNum\" : " << r.testSmpNum << "," << endl;
+	cout << "  \"beacons\" : [" << endl;
+
+    bool flag = 0;
+    for(std::unordered_map<int, int>::iterator it = r.beaconsUsed.begin(); it != r.beaconsUsed.end(); ++it) {
+        if (flag) {
+            cout << "," << endl;
+        }
+		cout << it->first;
+
+        flag = 1;
+    }
+
+    cout << endl << "]," << endl;
+	cout << "  \"aveDist\" : " << r.aveDist << "," << endl;
+	cout << "  \"aveDistNorm\" : " << (r.aveDist - r.minDist) / (r.maxDist - r.minDist) << "," << endl;
+	cout << "  \"maxDist\" : " << r.maxDist << "," << endl;
+	cout << "  \"minDist\" : " << r.minDist << "," << endl;
+
+	cout << "  \"worstPos\" : {\"x\":" << r.worstX << ", \"y\":" << r.worstY << "}," << endl;
+	cout << "  \"aveError\" : " << r.avgErr * 3 << "," << endl;
+	cout << "  \"maxError\" : " << r.maxErr * 3 << "," << endl;
+	cout << "  \"minError\" : " << r.minErr * 3 << "," << endl;
+	cout << "  \"prob1U\" : " << (r.lessThan1 * 1.0 / r.testSmpNum) << "," << endl;
+	cout << "  \"prob2U\" : " << (r.lessThan2 * 1.0 / r.testSmpNum) << "," << endl;
+	cout << "  \"prob3U\" : " << (r.lessThan3 * 1.0 / r.testSmpNum) << "," << endl;
+	cout << "}";
 }
 
 void printResult(vector<Result> v) {
@@ -136,24 +166,10 @@ void printResult(vector<Result> v) {
         if (flag) {
             cout << "," << endl;
         }
-        cout << "{" << endl;
-        cout << "  \"edgeID\" : " << r.edgeID << "," << endl;
-        cout << "  \"testSmpNum\" : " << r.testSmpNum << "," << endl;
-        cout << "  \"aveDist\" : " << r.aveDist << "," << endl;
-        cout << "  \"aveDistNorm\" : " << (r.aveDist - r.minDist) / (r.maxDist - r.minDist) << "," << endl;
-        cout << "  \"maxDist\" : " << r.maxDist << "," << endl;
-        cout << "  \"minDist\" : " << r.minDist << "," << endl;
-
-        cout << "  \"worstPos\" : {\"x\":" << r.worstX << ", \"y\":" << r.worstY << "}," << endl;
-        cout << "  \"aveError\" : " << r.avgErr * 3 << "," << endl;
-        cout << "  \"maxError\" : " << r.maxErr * 3 << "," << endl;
-        cout << "  \"minError\" : " << r.minErr * 3 << "," << endl;
-        cout << "  \"prob1U\" : " << (r.lessThan1 * 1.0 / r.testSmpNum) << "," << endl;
-        cout << "  \"prob2U\" : " << (r.lessThan2 * 1.0 / r.testSmpNum) << "," << endl;
-        cout << "  \"prob3U\" : " << (r.lessThan3 * 1.0 / r.testSmpNum) << "," << endl;
-        cout << "}";
+		printResultSingle(r);
         flag = 1;
     }
+
     cout << endl << "]," << endl;
     cout << "\"description\":{" << endl;
     cout << "  \"aveDist\":\"Average Distance\"," << endl;
@@ -180,7 +196,7 @@ void printResult(vector<Result> v) {
     cout << "}" << endl;
 }
 
-Result* testAccuracy(const char *trainFilePath, const char *testFilePath, float unit) {
+vector<Result> testAccuracy(const char *trainFilePath, const char *testFilePath, float unit, int edgeID) {
     int testBeaconNum;
     int trainBeaconNum;
     int beaconNum;
@@ -218,19 +234,65 @@ Result* testAccuracy(const char *trainFilePath, const char *testFilePath, float 
     }
 
     //remember the current position
-    fpos_t positionTest;
 	fpos_t positionTrain;
-	fgetpos(fpTest, &positionTest);
+    fpos_t positionTest;
 	fgetpos(fpTrain, &positionTrain);
+	fgetpos(fpTest, &positionTest);
+	vector<Result> results;
 
-	//rewind each time you loop
-	fsetpos(fpTest, &positionTest);
-	fsetpos(fpTrain, &positionTrain);
+	Result* result = testAccuracySingleRun(beaconNum, trainSmpNum, testSmpNum, fpTrain, fpTest, featureIdxMap, unit, edgeID);
+	results.push_back(*result);
 
-	return testAccuracySingleRun(beaconNum, trainSmpNum, testSmpNum, fpTrain, fpTest, featureIdxMap, unit);
+	if(featureIdxMap.size() > 1) {
+		vector<Result> reducedResults = testAccuracyReduce(beaconNum, trainSmpNum, testSmpNum, fpTrain, fpTest, featureIdxMap, unit, positionTrain, positionTest, edgeID);
+		results.insert(results.end(), reducedResults.begin(), reducedResults.end());
+	}
+
+	return results;
 }
 
-Result* testAccuracySingleRun(int beaconNum, int trainSmpNum, int testSmpNum, FILE *fpTrain, FILE *fpTest, unordered_map<int, int> featureIdxMap, float unit) {
+vector<Result> testAccuracyReduce(int beaconNum, int trainSmpNum, int testSmpNum, FILE *fpTrain, FILE *fpTest, unordered_map<int, int> featureIdxMap, float unit, fpos_t positionTrain, fpos_t positionTest, int edgeID) {
+	//rewind each time you loop
+	fsetpos(fpTrain, &positionTrain);
+	fsetpos(fpTest, &positionTest);
+
+	vector<Result> results;
+
+	Result* bestResult = NULL;
+	unordered_map<int, int> bestMap = NULL;
+
+	//for each element in featureIdxMap
+    for(std::unordered_map<int, int>::iterator it = featureIdxMap.begin(); it != featureIdxMap.end(); ++it) {
+		//create idxmap without it
+		unordered_map<int, int> tmpMap = featureIdxMap;
+		tmpMap.erase(it->first);
+
+		//test single run
+		Result* tmpResult = testAccuracySingleRun(tmpMap.size(), trainSmpNum, testSmpNum, *fpTrain, *fpTest, tmpMap, unit, edgeID);
+
+		//if best results
+		if(bestResult == NULL) {
+			bestResult = tmpResult;
+			bestMap = tmpMap;
+		} else if(tmpResult.lessThan1 > bestResult.lessThan1) {
+			bestResult = tmpResult;
+			bestMap = tmpMap;
+		}
+    }
+
+	//add best result to results
+	results.push_back(*bestResult);
+
+	//if not null reduce without it
+	if(tmpMap.size() > 1) {
+		vector<Result> reducedResults = testAccuracyReduce(tmpMap.size(), trainSmpNum, testSmpNum, *fpTrain, *fpTest, bestMap, unit, positionTrain, positionTest, edgeID) {
+		results.insert(results.end(), reducedResults.begin(), reducedResults.end());
+	}
+
+	return results;
+}
+
+Result* testAccuracySingleRun(int beaconNum, int trainSmpNum, int testSmpNum, FILE *fpTrain, FILE *fpTest, unordered_map<int, int> featureIdxMap, float unit, int edgeID) {
 	// load training data to build kd-tree
     cv::flann::Index kdTree;
     cv::Mat trainPosMat;
@@ -273,6 +335,9 @@ Result* testAccuracySingleRun(int beaconNum, int trainSmpNum, int testSmpNum, FI
 
     r->testSmpNum = testSmpNum;
     r->unit = unit;
+	r->beaconsUsed = featureIdxMap;
+	r->edgeID = edgeID;
+
 
     // testing data without filtering
     vector<float> smpErrs;
