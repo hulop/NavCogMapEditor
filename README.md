@@ -14,3 +14,10 @@ Current implementation uses browser local storage to store map data. It could no
 
 /editor/oss/
 [MarkerWithLabel.js](http://google-maps-utility-library-v3.googlecode.com/svn/tags/markerwithlabel/1.1.9/markerwithlabel/src/markerwithlabel.js)
+
+----
+## About
+[About HULOP](https://github.com/hulop/00Readme)
+
+## License
+[MIT](http://opensource.org/licenses/MIT)
