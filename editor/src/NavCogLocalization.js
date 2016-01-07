@@ -1,5 +1,5 @@
 $NC.loc = (function() {
-	var TYPES = ["1D_Beacon", "2D_Beacon_PDR"];
+	var TYPES = ["1D_Beacon", "1D_Beacon_PDR", "2D_Beacon_PDR"];
 	var ATTRS = {
 		"1D_Beacon" : {
 			"dataFile" : {name: "Data File", type: "File", filetype: "text"},
@@ -14,6 +14,9 @@ $NC.loc = (function() {
 			"anchor": {name: "Anchor", type: "LatLng"},
 			"rotate": {name: "Rotate", type: "Number", placeholder: "-180~180", value:0},
 			"scale": {name: "Scale", type: "Number", placeholder: "1.00", value:0}
+		},
+		"1D_Beacon_PDR" : {
+			"dataFile" : {name: "Data File", type: "File", filetype: "text"}
 		}
 	};
 	

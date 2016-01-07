@@ -437,6 +437,13 @@ function prepareData() {
 	_data["isAdvanced"] = $NC.loc.isAdvanced();
 	_data["uuids"] = _uuids;
 	_data["unit"] = _unit;
+	
+	for(var lk in _layers) {
+		var layer = _layers[lk];
+		for(var ek in layer.edges) {
+			calcBeaconPosForEdge(layer.beacons, layer.nodes, layer.edges[ek]);
+		}
+	}
 }
 
 function saveLocally() {

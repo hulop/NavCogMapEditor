@@ -78,11 +78,12 @@ $NC.poi = (function() {
 					id: this.id,
 					name: this.name,
 					description: this.description,
-					x: this.x,      // connected point
-					y: this.y,      // connected point
-					lat: this.lat,  // POI point
-					lng: this.lng,  // POI point
-					orientation: this.orientation					
+					x: this.x,
+					y: this.y,
+					lat: this.lat,
+					lng: this.lng,
+					orientation: this.orientation,
+					side: this.side
 				};
 			},		
 			/*
@@ -106,6 +107,18 @@ $NC.poi = (function() {
 					
 					var d = -$geom.getAngle(p1, p2, p3) / Math.PI * 180;
 					this.orientation = d;					
+					if (Math.abs(this.orientation) < 30) {
+						this.side = "front";
+					}
+					else if (Math.abs(this.orientation) > 150) {
+						this.side = "back";
+					}
+					else if (this.orientation > 0) {
+						this.side = "right";
+					}
+					else if (this.orientation < 0) {
+						this.side = "left";
+					}
 				}
 				delete this.direction;
 			},

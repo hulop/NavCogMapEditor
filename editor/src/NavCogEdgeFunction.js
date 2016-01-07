@@ -426,7 +426,7 @@ function showEdgeInfo(edge, pos) {
 		} else {
 			delete _currentEdge.localizationID;
 		}
-		if (loc.floors) {
+		if (loc && loc.floors) {
 			$("#edge-info-localization-floor").parent().removeClass("hidden");
 			var floors = loc.floors.split(",");
 			$util.setOptions("edge-info-localization-floor", floors, _currentEdge.localizationFloor,

@@ -153,3 +153,46 @@ function removeCurrentBeacon() {
 	_currentBeacon = null;
 	_beaconInfoWindow.close();
 }
+
+
+function calcBeaconPosForEdge(beacons, nodes, edge) {
+	var usingBeacons = getUsingBeacons(edge);
+	
+	var n1 = nodes[edge.node1];
+	var np1 = n1.infoFromEdges[edge.id];
+	var n2 = nodes[edge.node2];
+	var np2 = n2.infoFromEdges[edge.id];
+	var p1 = _map.getProjection().fromLatLngToPoint(new google.maps.LatLng(n1.lat, n1.lng));
+	var p2 = _map.getProjection().fromLatLngToPoint(new google.maps.LatLng(n2.lat, n2.lng));	
+	
+	for(var i in usingBeacons) {
+		var beacon = beacons[usingBeacons[i]];
+		if (!beacon) {
+			continue;
+		}
+		var p3 = _map.getProjection().fromLatLngToPoint(new google.maps.LatLng(beacon.lat, beacon.lng));
+		
+		var a = $geom.getDistanceOfTwoPoints(p1,p2);
+		var b = $geom.getDistanceOfTwoPoints(p1,p3);
+		var r = $geom.getAngle(p1,p2,p3);
+		var tmp = $geom.rotate(np2, r, np1); 
+		var np3 = {
+				x: np1.x + (tmp.x-np1.x)/a*b,
+				y: np1.y + (tmp.y-np1.y)/a*b
+		};				
+		console.log([beacon, edge.id, np3]);
+		if (!beacon.infoFromEdges) beacon.infoFromEdges = {};
+		beacon.infoFromEdges[edge.id] = np3;
+	}
+}
+
+function getUsingBeacons(edge) {
+	var  data = edge.dataFile;
+	if (edge.localizationID && $NC.loc.getById(edge.localizationID)) {
+		data = $NC.loc.getById(edge.localizationID).dataFile;
+	}
+	if (data && data.length > 0 && data.split("\n")[0] && data.split("\n")[0].split(": ")[1]) {
+		return data.split("\n")[0].split(": ")[1].split(",");
+	}
+	return [];
+}
