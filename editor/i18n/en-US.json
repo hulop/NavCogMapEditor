@@ -102,8 +102,45 @@
 "i18n": "Internationalization",
 "Target Language": "Target Language",
 "Select Language": "Select Language",
-"Base": "Base"
+"Base": "Base",
+
+"Add Localization": "Add Localization",
+"Edit Localization": "Edit Localization",
+"Localization": "Localization",
+"1D_Beacon": "Beacon (1D)",
+"2D_Beacon_PDR": "Beacon + Sensor (2D)",
+"Clear": "Clear",
+"ex.) Edge 1 (1D)": "ex.) Edge 1 (1D)",
+"Zip File": "Zip File",
+"Floors": "Floors",
+"File Name": "File Name", 
+"Size": "Size",
+"Are you sure to delete?": "Are you sure to delete?",
+
+"Data will be saved in your browser": "Data will be saved in your browser",
+"Clear data in your browser":"Clear data in your browser",
+
+"Advanced Mode": "Advanced Mode",
+"This editor is not support advanced data":"This editor is not support advanced data",
 
 
+"Clear": "Clear",
 
+"Description": "Description",
+"Coordination on the edge": "Coordination on the edge",
+"POI": "POI",
+"Click on the map with holding \"D\" key": "Click on the map with holding \"D\" key",
+"Use optional settings": "Use optional settings",
+"Use when coming from node": "Use when coming from node",
+
+"Unit of Measurement": "Unit of Measurement",
+"Meter": "Meter",
+"Feet": "Feet",
+
+"Width": "Width",
+"Height": "Height",
+"Rotate": "Rotate",
+"Scale": "Scale",
+"Anchor": "Anchor",
+"Get": "Get"
 }

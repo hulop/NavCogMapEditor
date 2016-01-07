@@ -28,10 +28,9 @@ $db.on("dbopen", function(e) {
 	});
 });
 
- function loaded() {
-	 return; // deprecated
-	reloadData();
-	initMapEvent();
+function loaded() {
+	$db.open()
+	//reloadData();
 	initKeyboardEvent();
 }
 
@@ -57,6 +56,9 @@ $editor.on("dataLoaded", function() {
 	_lastMajorID = _data.lastMajorID;
 	_lastMinorID = _data.lastMinorID;
 	_buildings = _data.buildings || {};
+	_localizations = _data.localizations || [];
+	_uuids = _data.uuids || {};
+	_unit = _data.unit || "feet";
 
 	// for backward compatibility (array -> hash change)
 	if (_buildings.constructor == Array) {
@@ -88,9 +90,15 @@ $editor.on("dataLoaded", function() {
 			}
 		}
 	}
+	// select unit
+	$util.selectOption("unit-of-measurement",_unit);
+	$("#unit-of-measurement").change(function(e) {
+		_unit = $util.getSelectedOption("unit-of-measurement").value;
+	});
 	
 	try {
 		_map = getNewGoogleMap();
+		initMapEvent();
 	} catch(e) {
 	}
 	if (_map && _data.centerLat && _data.centerLng) {	
@@ -98,12 +106,18 @@ $editor.on("dataLoaded", function() {
 		_map.setZoom(_data.zoom || 20);
 	}
 	
+	$("#advanced-mode-check").attr("checked", _data.isAdvanced);
+	$("#advanced-mode-check").trigger("change");
+	
 	$editor.trigger("derender");
 	$editor.trigger("layerChange");
 	$editor.trigger("buildingChange");
+	$editor.trigger("localizationChange");
 	$editor.trigger("languageChange", _data.languages);
 
 	renderLayer(_currentLayer);
+
+	$(document.body).show();
 });
 
 $editor.on("layerChange", function(e, layer) {
@@ -123,6 +137,7 @@ $editor.on("buildingChange", function(e, building) {
 	}
 });
 
+
 function initMapEvent() {
 	if (!_map) {
 		return;
@@ -139,9 +154,7 @@ function initMapEvent() {
     	};
     	_mapEditorRegionLatInput.value = e.latLng.lat();
     	_mapEditorRegionLngInput.value = e.latLng.lng();
-    	_edgeInfoWindow.close();
-    	_nodeInfoWindow.close();
-    	_beaconInfoWindow.close();
+    	$NC.infoWindow.trigger("closeall");
 
 		if (_currentEditMode == EditMode.Map) {
 
@@ -153,6 +166,11 @@ function initMapEvent() {
 						addNewNode(e.latLng, _maxNodeID.toString(), _layers);
 					};
 			    	break;
+				case TopoEditState.Adding_POI:
+					if (_currentLayer && _currentEdge && _tmpEdgeLine) {
+						$NC.poi.add(e.latLng, _currentEdge, _tmpEdgeLine, _currentLayer);
+						_tmpEdgeLine = null;
+					}
 			    default:
 			    	break;
 			}
@@ -164,10 +182,70 @@ function initMapEvent() {
 			};
 		}
     });
-
+    
+    function findShortestPointFromEdge(latLng) {
+		var p = _map.getProjection().fromLatLngToPoint(latLng);
+		var lines = [];
+		for(var k in _edgePolylines) {
+			var edge = _edgePolylines[k];
+			var path = edge.getPath();
+			var p1 = _map.getProjection().fromLatLngToPoint(path.getAt(0));
+			for(var i = 1; i < path.getLength(); i++) {
+				p2 = _map.getProjection().fromLatLngToPoint(path.getAt(i));
+				lines.push({
+					p1: p1,
+					p2: p2,
+					edge: _currentLayer.edges[k]
+				});
+				p1 = p2;
+			}
+		}
+		var min = Number.MAX_VALUE;
+		var minp = null;
+		var mine = null;
+		lines.forEach(function(l) {
+			var tp = $geom.getNearestPointOnLineSegFromPoint(l, p);
+			var d = $geom.getDistanceOfTwoPoints(p, tp);
+			if (d < min) {
+				min = d;
+				minp = tp;
+				mine = l.edge;
+			}
+		});
+		if (mine == null) {
+			return null;
+		}
+		return {
+			p: _map.getProjection().fromPointToLatLng(new google.maps.Point(minp.x, minp.y)),
+			edge: mine
+		};
+    }
+    
     _map.addListener("mousemove", function(e) {
     	if (_currentEditMode == EditMode.Topo) {
-    		if (_currentTopoEditState == TopoEditState.Adding_Edge) {
+    		if (_currentTopoEditState == TopoEditState.Adding_POI) {
+    			if (_tmpEdgeLine == null) {
+    				var pe = findShortestPointFromEdge(e.latLng);
+    				if (pe == null) {
+    					return;
+    				}
+    				var path = [e.latLng, pe.p];
+    				_currentEdge = pe.edge;
+    				_tmpEdgeLine = $NC.poi.newLine(_map, path);
+    				google.maps.event.addListenerOnce(_tmpEdgeLine, "click", function(e) {
+    					if (_currentLayer && _currentEdge && _tmpEdgeLine) {
+    						$NC.poi.add(e.latLng, _currentEdge, _tmpEdgeLine, _currentLayer);
+    						_tmpEdgeLine = null;
+    					}
+    				});
+    			} else {
+    				var pe = findShortestPointFromEdge(e.latLng);
+    				var path = [e.latLng, pe.p];
+    				_currentEdge = pe.edge;
+    				_tmpEdgeLine.setPath(path);
+    			}
+    		}
+    		else if (_currentTopoEditState == TopoEditState.Adding_Edge) {
     			if (_currentEdgeEditState == EdgeEditState.Waiting_Next_Node) {
     				if (_tmpEdgeLine == null) {
     					var path = [];
@@ -228,13 +306,19 @@ function initMapEvent() {
 }
 
 function initKeyboardEvent() {
+	document.addEventListener("keyup", function(e) {
+		$editor.shiftKey = e.shiftKey;
+	});
 	document.addEventListener("keydown", function(e) {
+		$editor.shiftKey = e.shiftKey;
 		switch (_currentEditMode) {
 			case EditMode.Topo:
 				if (e.keyCode == 65) { // "A" pressed
 					_currentTopoEditState = TopoEditState.Adding_Node;
 				} else if (e.keyCode == 83) { // "S" pressed
 					_currentTopoEditState = TopoEditState.Adding_Edge;
+				} else if (e.keyCode == 68) { // "D" pressed
+					_currentTopoEditState = TopoEditState.Adding_POI;
 				}
 				break;
 			case EditMode.Beacon:
@@ -248,16 +332,12 @@ function initKeyboardEvent() {
 	});
 
 	document.addEventListener("keyup", function(e) {
-		if (_currentTopoEditState == TopoEditState.Adding_Edge) {
-			if (_currentEdgeEditState != EdgeEditState.Edge_Done) {
-				if (_tmpEdgeLine) {
-					_tmpEdgeLine.setMap(null);
-				};
-				_tmpEdgeLine = null;
-				_tmpEdgeNode1 = null;
-				_tmpEdgeNode2 = null;
-			};
-		}
+		if (_tmpEdgeLine) {
+			_tmpEdgeLine.setMap(null);
+		};
+		_tmpEdgeLine = null;
+		_tmpEdgeNode1 = null;
+		_tmpEdgeNode2 = null;
 		_currentEdgeEditState = EdgeEditState.Doing_Nothing;
 		_currentTopoEditState = TopoEditState.Doing_Nothing;
 		_currentBeaconEditState = BeaconEditState.Doing_Nothing;
@@ -294,6 +374,8 @@ function renderLayer(layer) {
 	if (_currentEditMode == EditMode.Topo) {
 		renderNodesInLayer(layer);
 		renderEdgesInLayer(layer);
+		$NC.poi.renderInLayer(layer);
+		_logFunction.renderLayer(layer);
 	} else if (_currentEditMode == EditMode.Beacon) {
 		renderBeaconsInLayer(layer);
 	}
@@ -323,9 +405,7 @@ $(document).ready(function() {
 
 
 $editor.on("modeChange", function(e, mode) {
-	if (_edgeInfoWindow) {_edgeInfoWindow.close();}
-	if (_nodeInfoWindow) {_nodeInfoWindow.close();}
-	if (_beaconInfoWindow) {_beaconInfoWindow.close();}
+	$NC.infoWindow.trigger("closeall");
 	_currentEditMode = mode;
 	if (_currentLayer) {
 		$editor.trigger("derender");
@@ -340,6 +420,7 @@ $(window).on("hashchange", function(e) {
 	if(hash == "#tab1") { mode = EditMode.Map; }
 	if(hash == "#tab2") { mode = EditMode.Topo; }
 	if(hash == "#tab3") { mode = EditMode.Beacon; }
+	if(hash == "#tab4") { mode = EditMode.Localization; }
 	$editor.trigger("modeChange", mode);
 });
 
@@ -352,6 +433,10 @@ function prepareData() {
 	_data["lastUUID"] = _lastUUID;
 	_data["lastMajorID"] = _lastMajorID;
 	_data["lastMinorID"] = _lastMinorID;
+	_data["localizations"] = _localizations;
+	_data["isAdvanced"] = $NC.loc.isAdvanced();
+	_data["uuids"] = _uuids;
+	_data["unit"] = _unit;
 }
 
 function saveLocally() {
@@ -363,11 +448,11 @@ function saveLocally() {
 function saveToDowndloadFile() {
 	prepareData();
 	var filename = "NavCogMapData.json";
-    var blob = new Blob([JSON.stringify(_data)], { type: 'text/json;charset=utf-8;' });
-    downloadFile(blob, filename);
+    downloadFile(JSON.stringify(_data), filename);
 }
 
-function downloadFile(blob, filename) {    
+function downloadFile(data, filename) {    
+	var blob = new Blob([data], { type: 'text/json;charset=utf-8;' });
     if (navigator.msSaveBlob) {
         navigator.msSaveBlob(blob, filename);
     } else {
@@ -376,16 +461,21 @@ function downloadFile(blob, filename) {
             var url = URL.createObjectURL(blob);
             link.setAttribute("href", url);
             link.setAttribute("download", filename);
-            link.style = "visibility:hidden";
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+        } else {        	
+        	link.href = 'data:attachment/json,' + data;
         }
+        link.style = "visibility:hidden";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     }
 }
 
 function removeAllData() {
-	localStorage.removeItem(_dataStorageLabel);
+	//localStorage.removeItem(_dataStorageLabel);
+	//$db.clearData();
+	_data = {};
+	$editor.trigger("dataLoaded");
 }
 
 function addOptionToSelect(text, chooser) {

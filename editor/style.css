@@ -70,12 +70,32 @@ p, h3 {
 }
 
 .tabs a {
-  padding:5px 10px;
+  padding:3px 7px;
+  line-height: 24px;
   display:inline-block;
   background:#666;
   color:#fff;
   text-decoration:none;
+  border-right: 1px solid gray;
 }
+
+.tabs a.hidden {
+	display:none;
+}
+
+.hidden {
+	display: none;
+}
+
+span.attr {
+	width: 200px;
+	display: inline-block;
+  text-overflow: ellipsis;
+  -webkit-text-overflow: ellipsis;
+  -o-text-overflow: ellipsis;
+  overflow: hidden;
+}
+
 
 .tabs a.active {
   background:#bbb;
@@ -85,6 +105,11 @@ p, h3 {
 .tab {
 	width: 100%;
 	display: none;
+	line-height: 1.5;
+}
+
+.tab input[type=file] {
+	width: 200px;
 }
 
 fieldset {
@@ -100,21 +125,38 @@ fieldset {
 label {
   display: inline-block;
   text-align: right;
-  width: 7em;
+  width: 8em;
 }
 
 
+#edge-info-advanced {
+	display: none;
+}
+.advanced #edge-info-advanced {
+	display: block;
+}
+
+#edge-info-basic {
+	display: block;
+}
+.advanced #edge-info-basic {
+	display: none;
+}
+
+#google-map-view label {
+	width: auto;
+}
 
 form {
   padding: 5px;
 }
 
 .labels {
-     color: white;
+     color: black;
      font-family: "Lucida Grande", "Arial", sans-serif;
-     font-size: 10px;
+     font-size: 100%;
      text-align: center;
-     width: 20px;     
+     width: 20px;
      border: 0px;
      white-space: nowrap;
    }
@@ -123,7 +165,7 @@ button {
 	padding: 3px 8px;
 }
 
-.addbutton {
+.rightbutton {
 	float: right;
 	margin-left: 1em;
 }
