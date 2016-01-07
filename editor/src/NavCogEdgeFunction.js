@@ -83,7 +83,7 @@ function updateEdge(edge, edgeLine){
 			
 			var a = $geom.getDistanceOfTwoPoints(p1,p2);
 			var b = $geom.getDistanceOfTwoPoints(p1,p3);
-			var r = $geom.getAngle(p1,p2,p3);
+			var r = $geom.getAngle(p1,p3,p2);
 			var tmp = $geom.rotate(ep2, r, ep1); 
 			var ep3 = {
 					lat: llp3.lat(),
