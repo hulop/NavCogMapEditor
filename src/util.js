@@ -268,6 +268,9 @@ $i18n = (function() {
 	function getLanguageCodes() {
 		return codes;
 	}
+	function setLanguageCodes(_codes) {
+		codes = _codes
+	}
 
 	function addLanguageCode(code, name) {
 		codes[code] = name;
@@ -326,6 +329,7 @@ $i18n = (function() {
 		setLanguageCode : setLanguageCode,
 		getLanguageCode : getLanguageCode,
 		getLanguageCodes : getLanguageCodes,
+		setLanguageCodes: setLanguageCodes,
 		getLanguageCodeString : getLanguageCodeString,
 
 		getKeyCode : getKeyCode,

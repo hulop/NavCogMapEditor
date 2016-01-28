@@ -285,6 +285,11 @@ $(document).ready(function() {
 		$util.setOptions("i18n-language-selection", $.extend({"" : $i18n.t("Base")}, languages), $i18n.getLanguageCode());
 		checkUI();
 	});
+	$editor.on("dataChange", function(e) {
+		for(var code in $i18n.getLanguageCodes()) {
+			prepareLanguageEntries(code);
+		}
+	});
 
 	$("#i18n-language-selection").change(function() {
 		var option = $util.getSelectedOption('i18n-language-selection');
@@ -320,7 +325,7 @@ $(document).ready(function() {
 		}
 		window.location.reload();
 	});
-
+	
 	function deleteLanguageEntries(obj, key, code) {
 		delete obj[$i18n.k(key,code)];
 	}

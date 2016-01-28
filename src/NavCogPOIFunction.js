@@ -349,6 +349,7 @@ $NC.poi = (function() {
 		var newPOI = _currentPOI = new POI(data);
 		edge.pois = edge.pois || {};
 		edge.pois[id] = newPOI;
+		$editor.trigger("dataChange");
 		newPOI.render();
 		newPOI.showInfo();
 	}

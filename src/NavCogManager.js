@@ -105,6 +105,7 @@ $editor.on("dataLoaded", function() {
 		_map.setCenter({lat:_data.centerLat, lng:_data.centerLng});
 		_map.setZoom(_data.zoom || 20);
 	}
+	$i18n.setLanguageCodes(_data.languages);
 	
 	$("#advanced-mode-check").attr("checked", _data.isAdvanced);
 	$("#advanced-mode-check").trigger("change");
@@ -365,6 +366,7 @@ function addNewLayer() {
 				node.transitInfo[newLayer.z] = getNewTransitInfoToLayer(newLayer);
 			}
 		}
+		$editor.trigger("dataChange");
 	}
 }
 
@@ -387,6 +389,7 @@ function addNewBuildingName() {
 		var name = document.getElementById("topo-add-building-input").value;
 		_buildings[name] = {"name": name};
 		addOptionToSelect(name, _topoEditorBuildingChooser);
+		$editor.trigger("dataChange");
 	}
 }
 

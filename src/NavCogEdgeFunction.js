@@ -26,6 +26,7 @@
 	_tmpEdgeNode2.infoFromEdges[id] = getNewNodeInfoFromEdge(newEdge);
 	_currentLayer.edges[id] = newEdge;
 	
+	$editor.trigger("dataChange");
 	renderEdge(newEdge);
 	_tmpEdgeLine.setMap(null);
 	_tmpEdgeLine = null;

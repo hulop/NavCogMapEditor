@@ -24,6 +24,7 @@ function addNewBeacon(latLng, id, uuid, major, minor) {
 	var newBeacon = getNewBeacon({lat:latLng.lat(), lng:latLng.lng(), id:id, uuid:uuid, major:major, minor:minor});
 	_currentBeacon = newBeacon;
 	_currentLayer.beacons[id] = newBeacon;
+	$editor.trigger("dataChange");
 	renderBeacon(newBeacon);
 	showBeaconInfo(newBeacon);
 }
@@ -195,4 +196,92 @@ function getUsingBeacons(edge) {
 		return data.split("\n")[0].split(": ")[1].split(",");
 	}
 	return [];
+}
+
+function investigateKnnMax() {
+	//var result = "";
+	for(var i=0; i < _localizations.length; i++) {
+		//var max1 = _localizations[i].maxKnnDist;
+		var r = calcKnnMax(_localizations[i].dataFile);
+		//var max2 = r.max;
+		_localizations[i].maxKnnDist = r.min*0.5;
+		_localizations[i].minKnnDist = 0;
+		
+		//result += (r.min+"\t"+max1+"\t"+max2+"\t"+r.ave+"\t"+max1/max2+"\t"+r.num+"\t"+(max2/r.num)*Math.max(r.num,10)+"\n");
+	}
+	//console.log("\n"+result+"\n");
+}
+
+function calcKnnMax(data) {
+	var lines = data.split("\n");
+		
+	var beacons = lines[0].split(": ")[1].split(",");
+	beacons.splice(beacons.length-1,1);
+	//console.log(beacons);
+	var min = Number.MAX_VALUE;
+	var max = 0;
+	var ave = 0;
+	for(var i = 1; i < lines.length; i++) {
+		var items = lines[i].split(",");
+		if (items.length < 2) {
+			continue;
+		}
+		var dist = 0;
+		for(var j = 0; j < parseInt(items[2]); j++) {
+			//console.log([j,parseInt(items[3*j+5])]);
+			dist += Math.pow(parseInt(items[3*j+5])-(-100), 2) 
+		}
+		if (max < dist) {
+			max = dist;
+		}
+		if (dist < min) {
+			min = dist;
+		}
+		ave += dist;
+	}
+	return {
+		max:max,
+		min:min,
+		ave:ave/(lines.length-1),
+		num:beacons.length
+	};	
+}
+
+function removeBeacon(index, minor) {
+	var dataFile = _localizations[index].dataFile; 
+	var lines = dataFile.split("\n");
+	
+	var beacons = lines[0].split(": ")[1].split(",");
+	for(var i = beacons.length-1; i >= 0; i--) {
+		if (beacons[i] == minor) {
+			beacons.splice(i,1);
+		}
+	}
+	var header = "MinorID of "+beacons.length+" Beacon Used : "+beacons.join(",");
+	for(var i = 1; i < lines.length; i++) {
+		var line = lines[i];		
+		var items = line.split(",");
+		if (items.length < 2) {
+			continue;
+		}
+		var c = 0;
+		for(var j = 0; j < parseInt(items[2]); j++) {
+			if (parseInt(items[j*3+4]) == minor) {
+				items.splice(j*3+3,3);
+				c++;
+			}
+		}
+		items[2] = parseInt(items[2])-c;
+		line = items.join(",");		
+		lines[i] = line;
+	}
+	for(var i = lines.length-1; i>=0; i--) {
+		var items = lines[i].split(",");
+		if (parseInt(items[2]) < 2) {
+			lines.splice(i,1);
+		}
+	}
+	
+	lines[0] = header;
+	 _localizations[index].dataFile = lines.join("\n");
 }

@@ -28,6 +28,8 @@
 	}
 	
 	_currentLayer.nodes[id] = newNode;
+	$editor.trigger("dataChange");
+	
 	renderNode(newNode);
 	return newNode;
 }
@@ -272,9 +274,6 @@ function showNodeInfo(node) {
 			_currentNode.infoFromEdges[_nodeInfoEditorEdgeChooser.value][$i18n.k("trickyInfo")] = this.value;
 		});
 
-		_nodeInfoEditorBuildingChooser.addEventListener("change", function(e) {
-			_currentNode.building = _nodeInfoEditorBuildingChooser.value;
-		});
 		_nodeInfoEditorTypeChooser.addEventListener("change", function(e) {
 			_currentNode.type = this.selectedIndex;
 			var z = _nodeInfoEditorEdgeChooser.value;
