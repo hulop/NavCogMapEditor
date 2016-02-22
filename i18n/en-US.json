@@ -108,6 +108,7 @@
 "Edit Localization": "Edit Localization",
 "Localization": "Localization",
 "1D_Beacon": "Beacon (1D)",
+"1D_Beacon_PDR": "Beacon + Sensor (1D)",
 "2D_Beacon_PDR": "Beacon + Sensor (2D)",
 "Clear": "Clear",
 "ex.) Edge 1 (1D)": "ex.) Edge 1 (1D)",
@@ -142,5 +143,5 @@
 "Rotate": "Rotate",
 "Scale": "Scale",
 "Anchor": "Anchor",
-"Get": "Get"
+"Get": "Get",
 }

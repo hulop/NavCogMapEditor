@@ -110,6 +110,7 @@
 "Edit Localization": "位置推定の編集",
 "Localization": "位置推定",
 "1D_Beacon": "ビーコン (1次元)",
+"1D_Beacon_PDR": "ビーコン + センサー (1次元)",
 "2D_Beacon_PDR": "ビーコン + センサー (2次元)",
 "Clear": "クリア",
 "ex.) Edge 1 (1D)": "例) エッジ1 (1次元)",

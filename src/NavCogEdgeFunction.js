@@ -461,6 +461,29 @@ function updateEdgeLength(edge) {
 				prev = curr;
 			}
 		}
+	} else if ($NC.loc.getById(edge.localizationID).type.match(/1D/)) {
+		if (edge.path) {
+			var lens = [];
+			var total = 0;
+			var prev = null;
+			for(var i = 0; i < edge.path.length; i++) {
+				var curr = edge.path[i]; 
+				if (prev) {
+					var d = $geom.getDistanceOfTwoPoints(prev, curr);
+					lens.push(d);
+					total += d;
+				}
+				prev = curr;
+			}
+			var t = 0;
+			for(var i = 1; i <edge.path.length; i++) {
+				var curr = edge.path[i];
+				t += lens[i-1];
+				curr.x = 0;
+				curr.y = t/total*len;
+			}
+		}
+	
 	}
 	if (_edgeInfoEditorLenInput)
 		_edgeInfoEditorLenInput.value = len;
