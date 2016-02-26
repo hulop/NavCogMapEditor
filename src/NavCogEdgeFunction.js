@@ -475,12 +475,13 @@ function updateEdgeLength(edge) {
 				}
 				prev = curr;
 			}
+			var t0 = edge.path[0].y;
 			var t = 0;
 			for(var i = 1; i <edge.path.length; i++) {
 				var curr = edge.path[i];
 				t += lens[i-1];
 				curr.x = 0;
-				curr.y = t/total*len;
+				curr.y = t0+t/total*len;
 			}
 		}
 	

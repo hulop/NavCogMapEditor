@@ -146,6 +146,7 @@ function getNewBeacon(opt) {
 
 function getNewLocalization(opt) {
 	return $.extend({
+		id: $util.genUUID(),
 		name: "",
 		dataFile: "",
 		type: ""

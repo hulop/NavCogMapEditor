@@ -211,10 +211,11 @@ $(document).ready(function() {
 
 	_mapDataChooser.addEventListener("change", function(e) {
 		var file = this.files[0];
-		if (file) {
+		if (file) {			
 			var fr = new FileReader();
 			fr.addEventListener("load", function(e) {
 				_data = JSON.parse(fr.result);
+				_lastLoadFileName = file.name;
 				$editor.trigger("dataLoaded");
 			});
 			fr.readAsText(file);

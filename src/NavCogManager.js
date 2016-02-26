@@ -443,6 +443,9 @@ function prepareData() {
 	
 	for(var lk in _layers) {
 		var layer = _layers[lk];
+		for(var bk in layer.beacons) {
+			layer.beacons[bk].infoFromEdges = {};
+		}
 		for(var ek in layer.edges) {
 			calcBeaconPosForEdge(layer.beacons, layer.nodes, layer.edges[ek]);
 		}
@@ -458,7 +461,7 @@ function saveLocally() {
 function saveToDowndloadFile() {
 	prepareData();
 	var filename = "NavCogMapData.json";
-    downloadFile(JSON.stringify(_data), filename);
+    downloadFile(JSON.stringify(_data, null, "\t"), _lastLoadFileName || filename);
 }
 
 function downloadFile(data, filename) {    
