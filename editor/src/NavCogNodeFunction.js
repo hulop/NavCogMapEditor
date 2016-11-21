@@ -19,22 +19,31 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *******************************************************************************/
- 
+
  function addNewNode(latLng, id, layers) {
 	var b = $util.getSelectedOption("topo-building-chooser") && $util.getSelectedOption("topo-building-chooser").text;
 	var newNode = getNewNode({lat:latLng.lat(), lng:latLng.lng(), id:id, layerZ:_currentLayer.z, building: b});
 	for (var z in layers) { //TODO: should be removed, for large number of nodes
 		newNode.transitInfo[z] = getNewTransitInfoToLayer(layers[z]);
 	}
-	
+
 	_currentLayer.nodes[id] = newNode;
+	$editor.trigger("dataChange");
+
 	renderNode(newNode);
 	return newNode;
 }
 
-function renderNodesInLayer(layer) {
+function loadNodesInLayer(layer, silent) {
 	for (var nodeID in layer.nodes) {
-		renderNode(layer.nodes[nodeID]);
+		loadNode(layer.nodes[nodeID], silent);
+	}
+	_currentNode = null;
+}
+
+function renderNodesInLayer(layer, silent) {
+	for (var nodeID in layer.nodes) {
+		renderNode(layer.nodes[nodeID], silent);
 	}
 	_currentNode = null;
 }
@@ -43,7 +52,7 @@ $editor.on("derender", function(e, layer) {
 	for (var nodeID in layer?layer.nodes:_nodeMarkers) {
 		if (_nodeMarkers[nodeID]) {
 			_nodeMarkers[nodeID].setMap(null);
-			delete _nodeMarkers[nodeID];
+			//delete _nodeMarkers[nodeID];
 		};
 	}
 	_currentNode = null;
@@ -77,11 +86,15 @@ function setImgForNode(node) {
 	};
 }
 
-function renderNode(node) {
-	if (_nodeMarkers[node.id]) {
-		setImgForNode(node);
-		_nodeMarkers[node.id].setMap(_map);
-	} else {
+function renderNode(node, silent) {
+	loadNode(node, silent);
+	setImgForNode(node);
+	_nodeMarkers[node.id].setMap(_map);
+}
+
+
+function loadNode(node, silent) {
+	if (!_nodeMarkers[node.id]) {
 		var image = {
 	    	size: new google.maps.Size(25, 25),
 	    	anchor: new google.maps.Point(12.5, 12.5)
@@ -95,7 +108,7 @@ function renderNode(node) {
 	    }
 	    var nodeMarker = new MarkerWithLabel({
 	    	position: new google.maps.LatLng(node.lat, node.lng),
-	    	draggable: true,
+	    	draggable: false,
 	    	raiseOnDrag: false,
 	    	icon: image,
 	    	shape: {
@@ -106,78 +119,81 @@ function renderNode(node) {
 			labelClass: "labels",
 	    	labelAnchor: new google.maps.Point(10.5, 6.25)
 	    });
-		nodeMarker.setMap(_map);
 		nodeMarker.id = node.id;
 		_nodeMarkers[nodeMarker.id] = nodeMarker;
-		nodeMarker.addListener("click", function(e) {
-			switch (_currentTopoEditState) {
-				case TopoEditState.Doing_Nothing:
-					_currentNode = _currentLayer.nodes[this.id];
-					showNodeInfo(_currentNode);
-					break;
-				case TopoEditState.Adding_Edge:
-					if (_currentEdgeEditState == EdgeEditState.Doing_Nothing) {
-						_currentEdgeEditState = EdgeEditState.Waiting_Next_Node;
-					}
-					else if (_currentEdgeEditState == EdgeEditState.Waiting_Next_Node) {
-			    		_tmpEdgeNode2 = _currentLayer.nodes[this.id];
-			    		_maxEdgeID++;
-			    		addNewEdge(_maxEdgeID.toString(), _tmpEdgeNode1, _tmpEdgeNode2, _tmpEdgeLine);
-			    		_currentEdgeEditState = EdgeEditState.Edge_Done;
-					}
-					_tmpEdgeNode1 = _currentLayer.nodes[this.id];
-					_tmpEdgeLine = null;
-					break;
-				case TopoEditState.Connecting_TwoNodes:
-					break;
-				default:
-					break;
-			}
-			
-		});
-		nodeMarker.addListener("drag", function(e) {
-			_currentTopoEditState = TopoEditState.Draging_Node;
-			nodeMarker.setPosition(e.latLng);
-			_currentLayer.nodes[this.id].lat = e.latLng.lat();
-			_currentLayer.nodes[this.id].lng = e.latLng.lng();
-			for (var edgeID in _currentLayer.nodes[this.id].infoFromEdges) {
-				var node2;
-				if (_currentLayer.edges[edgeID].node1 == this.id) {
-					node2 = _currentLayer.nodes[_currentLayer.edges[edgeID].node2];
-				} else {
-					node2 = _currentLayer.nodes[_currentLayer.edges[edgeID].node1];
+		if (!silent) {
+			nodeMarker.setDraggable(true);
+			nodeMarker.addListener("click", function(e) {
+				switch (_currentTopoEditState) {
+					case TopoEditState.Doing_Nothing:
+						_currentNode = _currentLayer.nodes[this.id];
+						showNodeInfo(_currentNode);
+						break;
+					case TopoEditState.Adding_Edge:
+						if (_currentEdgeEditState == EdgeEditState.Doing_Nothing) {
+							_currentEdgeEditState = EdgeEditState.Waiting_Next_Node;
+						}
+						else if (_currentEdgeEditState == EdgeEditState.Waiting_Next_Node) {
+							_tmpEdgeNode2 = _currentLayer.nodes[this.id];
+							_maxEdgeID++;
+							addNewEdge(_maxEdgeID.toString(), _tmpEdgeNode1, _tmpEdgeNode2, _tmpEdgeLine);
+							_currentEdgeEditState = EdgeEditState.Edge_Done;
+						}
+						_tmpEdgeNode1 = _currentLayer.nodes[this.id];
+						_tmpEdgeLine = null;
+						break;
+					case TopoEditState.Connecting_TwoNodes:
+						break;
+					default:
+						break;
 				}
-				var node1 = _currentLayer.nodes[this.id];
-				var path = [];
-				path.push({lat:node2.lat, lng:node2.lng});
-				path.push({lat:node1.lat, lng:node1.lng});
-				_edgePolylines[edgeID].setPath(path);
-			}
-		});
-		nodeMarker.addListener("dragend", function(e) {
-			_currentTopoEditState = TopoEditState.Doing_Nothing;
-			nodeMarker.setPosition(e.latLng);
-			_currentLayer.nodes[this.id].lat = e.latLng.lat();
-			_currentLayer.nodes[this.id].lng = e.latLng.lng();
-			for (var edgeID in _currentLayer.nodes[this.id].infoFromEdges) {
-				var node2;
-				if (_currentLayer.edges[edgeID].node1 == this.id) {
-					node2 = _currentLayer.nodes[_currentLayer.edges[edgeID].node2];
-				} else {
-					node2 = _currentLayer.nodes[_currentLayer.edges[edgeID].node1];
+
+			});
+
+			function updateEdgeWithNode(marker, latLng) {
+				marker.setPosition(latLng);
+				var node = _currentLayer.nodes[marker.id];
+				node.lat = latLng.lat();
+				node.lng = latLng.lng();
+
+				for (var edgeID in node.infoFromEdges) {
+					var node1, node2;
+					if (_currentLayer.edges[edgeID].node1 == marker.id) {
+						node1 = _currentLayer.nodes[marker.id];
+						node2 = _currentLayer.nodes[_currentLayer.edges[edgeID].node2];
+					} else {
+						node1 = _currentLayer.nodes[_currentLayer.edges[edgeID].node1];
+						node2 = _currentLayer.nodes[marker.id];
+					}
+					var edge = _currentLayer.edges[edgeID];
+
+					var path = _edgePolylines[edgeID].getPath();
+					path.setAt(0, new google.maps.LatLng({lat:node1.lat, lng:node1.lng}));
+					path.setAt(path.getLength()-1, new google.maps.LatLng({lat:node2.lat, lng:node2.lng}));
+					//path.push({lat:node2.lat, lng:node2.lng});
+					//path.push({lat:node1.lat, lng:node1.lng});
+					_edgePolylines[edgeID].setPath(path);
+					updateEdge(edge, _edgePolylines[edgeID]);
 				}
-				var node1 = _currentLayer.nodes[this.id];
-				var path = [];
-				path.push({lat:node2.lat, lng:node2.lng});
-				path.push({lat:node1.lat, lng:node1.lng});
-				_edgePolylines[edgeID].setPath(path);
 			}
-		});
+
+			nodeMarker.addListener("drag", function(e) {
+				_currentTopoEditState = TopoEditState.Draging_Node;
+				updateEdgeWithNode(nodeMarker, e.latLng);
+			});
+
+			nodeMarker.addListener("dragend", function(e) {
+				_currentTopoEditState = TopoEditState.Draging_Node;
+				updateEdgeWithNode(nodeMarker, e.latLng);
+			});
+		}
 	}
 }
 
 function showNodeInfo(node) {
+	_edgeInfoWindow.close();
 	_nodeInfoWindow.setPosition(new google.maps.LatLng(node.lat, node.lng));
+	$NC.infoWindow.trigger("closeall");
 	_nodeInfoWindow.open(_map);
 	if (_nodeInfoEditorIDInput == null) {
 		_nodeInfoEditorTypeChooser = document.getElementById("node-info-type-chooser");
@@ -271,9 +287,6 @@ function showNodeInfo(node) {
 			_currentNode.infoFromEdges[_nodeInfoEditorEdgeChooser.value][$i18n.k("trickyInfo")] = this.value;
 		});
 
-		_nodeInfoEditorBuildingChooser.addEventListener("change", function(e) {
-			_currentNode.building = _nodeInfoEditorBuildingChooser.value;
-		});
 		_nodeInfoEditorTypeChooser.addEventListener("change", function(e) {
 			_currentNode.type = this.selectedIndex;
 			var z = _nodeInfoEditorEdgeChooser.value;
@@ -311,8 +324,8 @@ function showNodeInfo(node) {
 	_nodeInfoEditorPosDistInput.value = node.posDistThres;
 
 	// update building list
-	$util.setOptions(_nodeInfoEditorBuildingChooser, 
-			$.extend({"None":$i18n.t("None")}, 
+	$util.setOptions(_nodeInfoEditorBuildingChooser,
+			$.extend({"None":$i18n.t("None")},
 					$util.getLangAttrs(_buildings,"name")),
 			node.building);
 
@@ -349,6 +362,10 @@ function saveNodeInfo(node) {
 
 function setTransitUIToLayer(node, layer) {
 	renewSelectWithProertyOfArrayWithDummy(_layers[layer.z].nodes, "id", "None", _nodeInfoEditorTransitNodeChooser);
+	console.log([node, layer]);
+	if (!node.transitInfo[layer.z]) {
+		node.transitInfo[layer.z] = getNewTransitInfoToLayer(layer);
+	}
 	if (node.transitInfo[layer.z].enabled) {
 		_nodeInfoEditorTransitEnableChecker.checked = true;
 		_nodeInfoEditorTransitNodeChooser.disabled = false;

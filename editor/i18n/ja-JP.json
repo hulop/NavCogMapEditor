@@ -10,6 +10,7 @@
 "GeoJSON":"GeoJSON",
 "Save Locally":"ローカルに保存",
 "Download":"ダウンロード",
+"download":"ダウンロード",
 "Save":"保存",
 "Add New Layer":"レイヤーの追加",
 "Don't use Map":"地図を使わない",
@@ -104,6 +105,45 @@
 "i18n": "国際化",
 "Target Language": "対象言語",
 "Select Language": "言語を選択してください",
-"Base": "標準"
+"Base": "標準",
 
+"Add Localization": "位置推定の追加",
+"Edit Localization": "位置推定の編集",
+"Localization": "位置推定",
+"1D_Beacon": "ビーコン (1次元)",
+"1D_Beacon_PDR": "ビーコン + センサー (1次元)",
+"2D_Beacon_PDR": "ビーコン + センサー (2次元)",
+"Clear": "クリア",
+"ex.) Edge 1 (1D)": "例) エッジ1 (1次元)",
+"Zip File": "Zipファイル",
+"Floors": "階",
+"File Name": "ファイル名", 
+"Size": "サイズ",
+"Are you sure to delete?": "本当に消して良いですか?",
+
+"Data will be saved in your browser": "データはブラウザに保存されます",
+"Clear data in your browser":"ブラウザに保存されたデータを消去します",
+
+"Advanced Mode": "拡張モード",
+"This editor is not support advanced data":"このエディタは拡張モードのデータをサポートしていません",
+
+"Clear": "クリア",
+
+"Description": "詳細",
+"Coordination on the edge": "エッジ情報の位置",
+"POI": "POI",
+"Click on the map with holding \"D\" key": "\"D\"キーを押したまま地図をクリックする。",
+
+"Unit of Measurement": "測量単位",
+"Meter": "メートル",
+"Feet": "フィート",
+
+"Width": "幅",
+"Height": "高さ",
+"Rotate": "回転",
+"Scale": "スケール",
+"Anchor": "アンカー",
+"Get": "取得",
+
+"2D Navigation": "2Dナビゲーション"
 }

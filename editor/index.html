@@ -29,8 +29,8 @@ SOFTWARE.
 <title>NavCog Manager</title>
 <link rel="stylesheet" type="text/css" href="style.css">
 
-<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=geometry"></script>
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=geometry&key=AIzaSyD0CesMmqW2GGUrzI-TWTuadmCuVWiM6aQ"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
 <script src="./oss/MarkerWithLabel.js"></script>
 <script src="./src/util.js"></script>
 <script src="./src/NavCogGlobals.js"></script>
@@ -38,6 +38,7 @@ SOFTWARE.
 <script src="./src/edgeInfoWinHtmlString.js"></script>
 <script src="./src/nodeInfoWinHtmlString.js"></script>
 <script src="./src/beaconInfoWinHtmlString.js"></script>
+<script src="./src/poiInfoWinHtmlString.js"></script>
 <script src="./src/NavCogManager.js"></script>
 <script src="./src/NavDataStructure.js"></script>
 <script src="./src/NavCogMapEditorFunction.js"></script>
@@ -45,14 +46,19 @@ SOFTWARE.
 <script src="./src/NavCogNodeFunction.js"></script>
 <script src="./src/NavCogEdgeFunction.js"></script>
 <script src="./src/NavCogBeaconFunction.js"></script>
+<script src="./src/NavCogLocalization.js"></script>
+<script src="./src/NavCogPOIFunction.js"></script>
+<script src="./src/NavCogLogFunction.js"></script>
 </head>
 
-<body onload="loaded()" style="display: none">
-	<ul class='tabs'>
-		<li><a href='#tab0'>$(File)</a></li>
-		<li><a href='#tab1'>$(Map)</a></li>
-		<li><a href='#tab2'>$(Topology)</a></li>
-		<li><a href='#tab3'>$(Beacons)</a></li>
+<body style="display: none">
+
+	<ul class='tabs' id="tabs">
+		<li><a href='#tab0'>$(File)</a></li
+		><li><a href='#tab1'>$(Map)</a></li
+		><li><a href='#tab2'>$(Topology)</a></li
+		><li><a href='#tab4' class="hidden" id="localization-tab">$(Localization)</a></li
+		><li><a href='#tab3'>$(Beacons)</a></li>
 	</ul>
 
 	<div id="tabs-container">
@@ -66,32 +72,64 @@ SOFTWARE.
 				<legend>$(Export Map Data) </legend>
 				<label for="export-data">$(For App) </label>
 				<button type="button" id="export-data" onclick="saveToDowndloadFile()">$(Download)</button>
-				<br> <br> <label for="export-geojson">$(GeoJSON) </label>
+				<br> <label for="export-geojson">$(GeoJSON) </label>
 				<button type="button" id="export-geojson" onclick="saveToDowndloadGeoJSON()" disabled>$(Download)</button>
+			</fieldset>
+
+			<fieldset class="center">
+			  <legend>$(Unit of Measurement)</legend>
+			  <select id="unit-of-measurement">
+                            <option value="feet" selected>$(Feet)</option>
+			    <option value="meter">$(Meter)</option>
+                          </select>
 			</fieldset>
 
 			<fieldset class="center">
 				<legend>UI Language Setting</legend>
 				<!-- Do not internationalize -->
-				<select id="language_select">
+				<select id="language-select">
 				</select>
 			</fieldset>
 
 			<fieldset class="center">
 				<legend>$(i18n)</legend>
-				$(Target Language): <select id="i18n_language_selection">
+				$(Target Language): <select id="i18n-language-selection">
 				</select>
-				<button id="i18n_language_delete_button">$(Delete)</button>
-				<br> <br> <select id="i18n_language_list">
+				<button id="i18n-language-delete-button">$(Delete)</button>
+				<br> <select id="i18n-language-list">
 				</select>
-				<button id="i18n_language_add_button">$(Add)</button>
+				<button id="i18n-language-add-button">$(Add)</button>
 			</fieldset>
 
-			<fieldset class="center">
+			<fieldset class="center hidden">
+				<legend>$(Advanced Mode)</legend>
+				<label for="advanced-mode-check">$(Advanced Mode): </label>
+				<input type="checkbox" id="advanced-mode-check">
+			</fieldset>
+
+			<fieldset class="center" title="$(Data will be saved in your browser)">
 				<legend>$(Save Locally)</legend>
 				<button type="button" onclick="saveLocally()">$(Save)</button>
 			</fieldset>
 
+			<fieldset title="$(Load remote)">
+				<legend>$(Load)</legend>
+				<div style="text-align: center">
+					<button type="button" onclick="loadRemote()">$(Load)</button>
+				</div>
+			</fieldset>
+
+			<fieldset title="$(Clear data in your browser)">
+				<legend>$(Clear)</legend>
+				<div style="text-align: center">
+					<button type="button" onclick="removeAllData()">$(Clear)</button>
+				</div>
+			</fieldset>
+
+			<fieldset class="center">
+				<legend>Import Log Data</legend>
+				<label for="map-log-chooser">$(Import) : </label> <input type="file" id="log-data-chooser" style="width: 200px">
+			</fieldset>
 		</div>
 
 		<div id='tab1' class="tab">
@@ -102,23 +140,23 @@ SOFTWARE.
 			<fieldset>
 				<legend>$(Add New Layer)</legend>
 				$(Z-Index): <input type="text" style="width: 25px" id="map-editor-layer-input">
-				<button class="addbutton" type="button" onclick="addNewLayer()">$(Add Layer)</button>
+				<button class="rightbutton" type="button" onclick="addNewLayer()">$(Add Layer)</button>
 			</fieldset>
 
 			<fieldset>
 				<legend>$(Add New Region To Current Layer)</legend>
-				$(Layer) : <select id="map-editor-layer-chooser"></select><br> <br> <label for="region-image-chooser">$(Image File):</label> <input
+				$(Layer) : <select id="map-editor-layer-chooser"></select><br> <label for="region-image-chooser">$(Image File):</label> <input
 					type="file" id="region-image-chooser"><br> <label for="region-name-input">$(Region Name):</label> <input type="text"
 					id="region-name-input"><br> <label for="region-center-latitude">$(Latitude):</label> <input type="text"
 					id="region-center-latitude"><br> <label for="region-center-longitude">$(Longitude):</label> <input type="text"
 					id="region-center-longitude"><br> <span class="hint">$(Click the map to get Latitude & Longitude)</span><br>
-				<button class="addbutton" type="button" id="region-add-new-region" onclick="addNewRegion()">$(Add New Region)</button>
+				<button class="rightbutton" type="button" id="region-add-new-region" onclick="addNewRegion()">$(Add New Region)</button>
 			</fieldset>
 
 			<fieldset>
 				<legend>$(Edit Region)</legend>
 				$(Region) : <select id="region-chooser"></select>
-				<button class="addbutton" type="button" onclick="removeCurrentRegion()">$(delete)</button>
+				<button class="rightbutton" type="button" onclick="removeCurrentRegion()">$(delete)</button>
 				<fieldset class="center" id="region-position-editor">
 					<legend class="separator">$(Coordinates)</legend>
 					$[Move (5.0m)]:
@@ -169,6 +207,7 @@ SOFTWARE.
 				<legend>$(Add Node / Edge)</legend>
 				<strong>$(Node)</strong>: $(Click on the map with holding "A" key)<br>
 				<strong>$(Edge)</strong>: $(Click on a node and another node with holding "S" key)<br>
+				<strong>$(POI)</strong>: $(Click on the map with holding "D" key)<br>
 			</fieldset>
 
 			<fieldset class="center">
@@ -192,11 +231,53 @@ SOFTWARE.
 			</fieldset>
 		</div>
 
+
+		<div id='tab4' class="tab">
+			<fieldset>
+				<legend>$(Add Localization)</legend>
+				<label for="localization-name">$(Name): </label><input type="text" id="localization-name"></input><br>
+				<button class="rightbutton" id="localization-add-button">$(Add)</button>
+			</fieldset>
+			<fieldset>
+				<legend>$(Edit Localization)</legend>
+				<select id="localization-select"></select><br>
+				<label for="localization-name-edit">$(Name): </label><input type="text" id="localization-name-edit"></input><br>
+				<label for="localization-type">$(Type): </label>
+				<select id="localization-type">
+				</select><br>
+				<div id="localization-attributes" style="white-space:nowrap"></div>
+
+				<button class="rightbutton" id="localization-delete">$(Delete)</button>
+			</fieldset>
+
+			<fieldset class="center">
+				<legend>$(Save Locally)</legend>
+				<div>
+					<button type="button" onclick="saveLocally()">$(Save)</button>
+				</div>
+			</fieldset>
+		</div>
+
 		<div id='tab3' class="tab">
 			<fieldset class="center">
 				<legend>$(Choose Layer)</legend>
 				<div>
 					$(Layer): <select id="beacon-info-layer-chooser"></select>
+				</div>
+			</fieldset>
+
+			<fieldset class="center">
+				<legend>$(Download)</legend>
+				<div>
+					$(Edge): <select id="beacon-info-edge-chooser"></select><br>
+					<button type="button" onclick="saveBeaconCSV()">$(Download)</button>
+				</div>
+			</fieldset>
+
+			<fieldset class="center">
+				<legend>$(Download Sweep Data)</legend>
+				<div>
+					<button type="button" onclick="saveSweepList()">$(Download Sweep Data)</button>
 				</div>
 			</fieldset>
 

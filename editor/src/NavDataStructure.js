@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *******************************************************************************/
- 
+
  var GOOGLE_MAP_DEFAULT_STYLE = {
 		featureType: "poi",
 		elementType: "labels",
@@ -29,16 +29,39 @@
 	};
 
 function getNewGoogleMap() {
-	return new google.maps.Map(document.getElementById("google-map-view"), {
-		zoom : 30,
+	function CoordMapType(tileSize) {
+		  this.tileSize = tileSize;
+		}
+
+		CoordMapType.prototype.maxZoom = 24;
+		CoordMapType.prototype.name = 'Tile #s';
+		CoordMapType.prototype.alt = 'Tile Coordinate Map Type';
+
+		CoordMapType.prototype.getTile = function(coord, zoom, ownerDocument) {
+		  var div = ownerDocument.createElement('div');
+		  div.style.width = this.tileSize.width + 'px';
+		  div.style.height = this.tileSize.height + 'px';
+		  div.style.backgroundColor = '#E5E3DF';
+		  return div;
+		};
+	var map =  new google.maps.Map(document.getElementById("google-map-view"), {
+		zoom : 21,
 		center : {
 		    lat : 40.44341980831697,
 		    lng : -79.94513064622879
 		},
 		disableDefaultUI: true,
 		styles : [GOOGLE_MAP_DEFAULT_STYLE],
-		zoomControl: true
+		zoomControl: true,
+		mapTypeId: google.maps.MapTypeId.ROADMAP,
+		mapTypeControlOptions: {
+		      mapTypeIds: ['nomap', google.maps.MapTypeId.ROADMAP],
+		      style: google.maps.MapTypeControlStyle.DROPDOWN_MENU
+		    }
     });
+	  map.mapTypes.set('nomap',
+              new CoordMapType(new google.maps.Size(256, 256)));
+	  return map;
 }
 
 function getNewLayer(opt) {
@@ -76,7 +99,7 @@ function getNewEdge(opt) {
 		type: 0,
 		len: 0,
 		node1: 0,
-		node2: 0, 
+		node2: 0,
 		infoFromNode1: "",
 		infoFromNode2: "",
 		oriFromNode1: 0,
@@ -143,11 +166,34 @@ function getNewBeacon(opt) {
 	}, opt);
 }
 
+
+function getNewLocalization(opt) {
+	return $.extend({
+		id: $util.genUUID(),
+		name: "",
+		dataFile: "",
+		type: ""
+	}, opt);
+}
+
+function getNewPOI(opt) {
+	return $.extend({
+		name: "",
+		id: 0,
+		description: "",
+		x: 0,
+		y: 0,
+		side: "unknown",
+		forward: true,
+		backward: true
+	}, opt);
+}
+
 /*
  * IndoorMapOverlay displays an indoor map image on a google map.
  * It calculates bounds from @width, @height, and center point (@lat, @lng)
  * @rotate makes the image (@src) rotated in degrees.
- * 
+ *
  * @lat:     latitude of the center
  * @lng:     longitude of the center
  * @rotate:  rotate angle of the image (degrees, default 0)
@@ -176,16 +222,16 @@ FloorPlanOverlay.prototype.onAdd = function() {
     div.style.borderStyle = 'none';
     div.style.borderWidth = '0px';
     div.style.position = 'absolute';
-    
+
     var img = document.createElement('img');
     img.style.width = '100%';
     img.style.position = 'absolute';
     img.style.opacity = this.opacity || 1.0;
     img.src = this.src;
 
-    div.appendChild(img);    
+    div.appendChild(img);
     this.dom = div;
-    
+
     var panes = this.getPanes();
     panes.overlayLayer.appendChild(div);
 };
@@ -194,13 +240,13 @@ FloorPlanOverlay.prototype.draw = function() {
     var center = new google.maps.LatLng(this.lat, this.lng);
     var width = this.width / this.ppm;
     var height = this.height / this.ppm;
-    
+
     var len = Math.sqrt(Math.pow(width/2,2)+Math.pow(height/2,2));
     var dne = Math.atan2(+width/2, +height/2);
     var dsw = Math.atan2(-width/2, -height/2);
     var ne = google.maps.geometry.spherical.computeOffset(center, len, dne*180/Math.PI);
     var sw = google.maps.geometry.spherical.computeOffset(center, len, dsw*180/Math.PI);
-    
+
     var prj = this.getProjection();
     sw = prj.fromLatLngToDivPixel(sw);
     ne = prj.fromLatLngToDivPixel(ne);
@@ -212,7 +258,7 @@ FloorPlanOverlay.prototype.draw = function() {
     div.style.height = (sw.y - ne.y) + 'px';
 
     //var img = this.dom.firstChild;
-    
+
 
     // cross browser
     div.style.webkitTransform = "rotate("+this.rotate+"deg)";

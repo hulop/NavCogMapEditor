@@ -19,19 +19,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *******************************************************************************/
- 
+
 $db.on("dbopen", function(e) {
 	$db.getData(function(data) {
-		_data = data;
-		$editor.trigger("dataLoaded");
-		$(window).trigger("hashchange");
+		if(JSON.stringify(data) != "{}") {
+			_data = data;
+			$editor.trigger("dataLoaded");
+			$(window).trigger("hashchange");
+		} else
+			loadRemote();
 	});
 });
 
- function loaded() {
-	 return; // deprecated
-	reloadData();
-	initMapEvent();
+function loaded() {
+	$db.open()
+	//reloadData();
 	initKeyboardEvent();
 }
 
@@ -44,7 +46,68 @@ function reloadData() {
 	}
 	$editor.trigger("dataLoaded");
 	$(window).trigger("hashchange");
-}	
+}
+
+function layerforbeacon(beacon) {
+	for(var l in _layers) {
+		var layer = _layers[l];
+		if (typeof layer.beacons[beacon] != 'undefined')
+			return l;
+	}
+
+	return null;
+}
+
+function layerforedge(edge) {
+	for(var l in _layers) {
+		var layer = _layers[l];
+		if (typeof layer.edges[edge] != 'undefined')
+			return l;
+	}
+
+	return null;
+}
+
+function findShortestPointFromEdge(latLng) {
+	var p = _map.getProjection().fromLatLngToPoint(latLng);
+	var lines = [];
+
+	for(var k in _edgePolylines) {
+		var edge = _edgePolylines[k];
+		var path = edge.getPath();
+		var p1 = _map.getProjection().fromLatLngToPoint(path.getAt(0));
+		for(var i = 1; i < path.getLength(); i++) {
+			p2 = _map.getProjection().fromLatLngToPoint(path.getAt(i));
+			lines.push({
+				p1: p1,
+				p2: p2,
+				edge: _currentLayer.edges[k]
+			});
+			p1 = p2;
+		}
+	}
+	var min = Number.MAX_VALUE;
+	var minp = null;
+	var mine = null;
+
+	lines.forEach(function(l) {
+		var tp = $geom.getNearestPointOnLineSegFromPoint(l, p);
+		var d = $geom.getDistanceOfTwoPoints(p, tp);
+
+		if (l.edge && d < min) {
+			min = d;
+			minp = tp;
+			mine = l.edge;
+		}
+	});
+	if (mine == null) {
+		return null;
+	}
+	return {
+		p: _map.getProjection().fromPointToLatLng(new google.maps.Point(minp.x, minp.y)),
+		edge: mine
+	};
+}
 
 $editor.on("dataLoaded", function() {
     _layers = _data.layers || {};
@@ -57,6 +120,9 @@ $editor.on("dataLoaded", function() {
 	_lastMajorID = _data.lastMajorID;
 	_lastMinorID = _data.lastMinorID;
 	_buildings = _data.buildings || {};
+	_localizations = _data.localizations || [];
+	_uuids = _data.uuids || {};
+	_unit = _data.unit || "feet";
 
 	// for backward compatibility (array -> hash change)
 	if (_buildings.constructor == Array) {
@@ -88,22 +154,47 @@ $editor.on("dataLoaded", function() {
 			}
 		}
 	}
-	
+
+	// select unit
+	$util.selectOption("unit-of-measurement",_unit);
+	$("#unit-of-measurement").change(function(e) {
+		_unit = $util.getSelectedOption("unit-of-measurement").value;
+	});
+
 	try {
 		_map = getNewGoogleMap();
+
+
+		_map.addListener('zoom_changed', function() {
+			if (_map.getZoom() >= 21) {
+				_map.setMapTypeId("nomap");
+			} else {
+				_map.setMapTypeId(google.maps.MapTypeId.ROADMAP);
+			}
+		});
+
+		initMapEvent();
 	} catch(e) {
 	}
-	if (_map && _data.centerLat && _data.centerLng) {	
+
+	if (_map && _data.centerLat && _data.centerLng) {
 		_map.setCenter({lat:_data.centerLat, lng:_data.centerLng});
 		_map.setZoom(_data.zoom || 20);
 	}
-	
-	$editor.trigger("derender");
-	$editor.trigger("layerChange");
-	$editor.trigger("buildingChange");
-	$editor.trigger("languageChange", _data.languages);
 
-	renderLayer(_currentLayer);
+	$i18n.setLanguageCodes(_data.languages);
+
+	$("#advanced-mode-check").attr("checked", _data.isAdvanced);
+	$("#advanced-mode-check").trigger("change");
+
+	if (location.search.match(/hidden/)) {
+		$("#tabs").hide();
+		$("#tabs-container").hide();
+		$("#google-map-view").css({ 'margin-left': "0px" });
+		_silent = true;
+	}
+
+	$(document.body).show();
 });
 
 $editor.on("layerChange", function(e, layer) {
@@ -114,14 +205,15 @@ $editor.on("layerChange", function(e, layer) {
 });
 
 $editor.on("buildingChange", function(e, building) {
-	$util.setOptions("topo-building-chooser",$util.getLangAttrs(_buildings,"name")); 
-	
+	$util.setOptions("topo-building-chooser",$util.getLangAttrs(_buildings,"name"));
+
 	$("#building_lang").text("(" + $i18n.getLanguageCodeString() + ")");
 	var option = $util.getSelectedOption("topo-building-chooser");
 	if (option) {
 		$("#building_lang_name").val($util.getLangAttr(_buildings[option.value], "name"));
 	}
 });
+
 
 function initMapEvent() {
 	if (!_map) {
@@ -139,9 +231,7 @@ function initMapEvent() {
     	};
     	_mapEditorRegionLatInput.value = e.latLng.lat();
     	_mapEditorRegionLngInput.value = e.latLng.lng();
-    	_edgeInfoWindow.close();
-    	_nodeInfoWindow.close();
-    	_beaconInfoWindow.close();
+    	$NC.infoWindow.trigger("closeall");
 
 		if (_currentEditMode == EditMode.Map) {
 
@@ -153,6 +243,12 @@ function initMapEvent() {
 						addNewNode(e.latLng, _maxNodeID.toString(), _layers);
 					};
 			    	break;
+				case TopoEditState.Adding_POI:
+					if (_currentLayer && _currentEdge && _tmpEdgeLine) {
+						npoi = $NC.poi.add(e.latLng, _currentEdge, _tmpEdgeLine, _currentLayer);
+						npoi.showInfo();
+						_tmpEdgeLine = null;
+					}
 			    default:
 			    	break;
 			}
@@ -167,7 +263,30 @@ function initMapEvent() {
 
     _map.addListener("mousemove", function(e) {
     	if (_currentEditMode == EditMode.Topo) {
-    		if (_currentTopoEditState == TopoEditState.Adding_Edge) {
+    		if (_currentTopoEditState == TopoEditState.Adding_POI) {
+    			if (_tmpEdgeLine == null) {
+    				var pe = findShortestPointFromEdge(e.latLng);
+    				if (pe == null) {
+    					return;
+    				}
+    				var path = [e.latLng, pe.p];
+    				_currentEdge = pe.edge;
+    				_tmpEdgeLine = $NC.poi.newLine(_map, path);
+    				google.maps.event.addListenerOnce(_tmpEdgeLine, "click", function(e) {
+    					if (_currentLayer && _currentEdge && _tmpEdgeLine) {
+    						npoi = $NC.poi.add(e.latLng, _currentEdge, _tmpEdgeLine, _currentLayer);
+							npoi.showInfo();
+    						_tmpEdgeLine = null;
+    					}
+    				});
+    			} else {
+    				var pe = findShortestPointFromEdge(e.latLng);
+    				var path = [e.latLng, pe.p];
+    				_currentEdge = pe.edge;
+    				_tmpEdgeLine.setPath(path);
+    			}
+    		}
+    		else if (_currentTopoEditState == TopoEditState.Adding_Edge) {
     			if (_currentEdgeEditState == EdgeEditState.Waiting_Next_Node) {
     				if (_tmpEdgeLine == null) {
     					var path = [];
@@ -180,7 +299,7 @@ function initMapEvent() {
 							strokeWeight: 10,
 							strokeOpacity: 1.0,
 						});
-						
+
 						google.maps.event.addListenerOnce(_tmpEdgeLine, "click", function(e) { // only for once
 							if (_currentEditMode == EditMode.Topo) {
 								if (_currentTopoEditState == TopoEditState.Adding_Edge) {
@@ -225,16 +344,166 @@ function initMapEvent() {
     		};
     	};
     })
+
+	// Wait for idle map
+	var list1=_map.addListener('idle', function() {
+		google.maps.event.removeListener(list1);
+
+		$editor.trigger("derender");
+		$editor.trigger("layerChange");
+		$editor.trigger("buildingChange");
+		$editor.trigger("localizationChange");
+		$editor.trigger("languageChange", _data.languages);
+
+		if (edges = location.search.match(/edge=([^&]*)/)) {
+			edgeID = edges[1];
+			//_currentEditMode = EditMode.Topo;
+			$editor.trigger("layerChange", _layers[layerforedge(edgeID)]);
+
+			_currentLayer.edges[edgeID].color = 1;
+			edge = _currentLayer.edges[edgeID];
+			n1 = _currentLayer.nodes[edge.node1];
+			n2 = _currentLayer.nodes[edge.node2];
+
+			n1lat = n1.lat;
+			n1lng = n1.lng;
+			n2lat = n2.lat;
+			n2lng = n2.lng;
+
+			flat = (n1lat + n2lat)/2;
+			flng = (n1lng + n2lng)/2;
+
+			focus = new google.maps.LatLng(flat, flng);
+			_map.setCenter(focus);
+
+			// Try HTML5 geolocation.
+			if (navigator.geolocation) {
+				$(function () {
+					var pos;
+					_curmarker = new google.maps.Marker({
+						position: pos,
+						title:"Your position"
+					});
+					setInterval(function () {
+
+						navigator.geolocation.getCurrentPosition(function(position) {
+							pos = {
+							lat: position.coords.latitude,
+							lng: position.coords.longitude
+							};
+							_curmarker.setMap(_map);
+
+							_curmarker.setPosition(pos);
+							_map.setCenter(pos);
+						}, function() {
+							console.log("error in localization");
+						});
+
+					}, 5000);
+				});
+			} else {
+				// Browser doesn't support Geolocation
+				console.log("error in localization");
+			}
+
+			// if (beaconlist = location.search.match(/beaconlist=([^&]*)/)) {
+			// 	blistext="navcog://beaconsweeper?major=65535&beacons="+beaconlist[1]+"wid=1&edge="+edgeID;
+			// 	document.getElementById("blist").href=blistext;
+			// }
+			// console.log(n1.building + ' ' + n1.floor)
+			// document.getElementById("floor").innerHTML = 'Floor ' + n1.floor + ' of ' + n1.building;
+
+			renderEdge(edge, true);
+			renderNode(n1, true);
+			renderNode(n2, true);
+
+			if (poistr = location.search.match(/poi=([^&]*)/)) {
+				poiID = poistr[1];
+				poi = edge.pois[poiID];
+
+				$NC.poi.renderPOI(poi, edge, n1, n2, true);
+
+// 				i1 = n1.infoFromEdges[edgeID];
+// 				i2 = n2.infoFromEdges[edgeID];
+//
+// 				poi = {x:0, y:poi_y[1]};
+//
+// 				t = $geom.getDistanceOfTwoPoints(i1, poi) / $geom.getDistanceOfTwoPoints(i1, i2);
+// 				latLng = new google.maps.LatLng({
+// 						lat: n1.lat + (n2.lat - n1.lat) * t,
+// 						lng: n1.lng + (n2.lng - n1.lng) * t
+// 					});
+//
+// 				line = $NC.poi.newLine(_map, [latLng, latLng]);
+//
+// 				$NC.poi.add(latLng, edge, line, _currentLayer);
+
+			}
+
+		} else if (beastring = location.search.match(/beacon=([^&]*)/)) {
+			beaconID = beastring[1];
+			//_currentEditMode = EditMode.Beacon;
+			$editor.trigger("layerChange", _layers[layerforbeacon(beaconID)]);
+
+			beacon = _currentLayer.beacons[beaconID];
+			beacon.img = 1;
+			blat = beacon.lat;
+			blng = beacon.lng;
+			focus = new google.maps.LatLng(blat, blng);
+			//_map.setCenter(focus);
+
+			// Try HTML5 geolocation.
+			if (navigator.geolocation) {
+				_curmarker = new google.maps.Marker({
+					position: focus,
+					title:"Your position"
+				});
+
+				_curmarker.setMap(_map);
+
+				$(function () {
+					setInterval(function () {
+
+						navigator.geolocation.getCurrentPosition(function(position) {
+							var pos = {
+							lat: position.coords.latitude,
+							lng: position.coords.longitude
+							};
+
+							_curmarker.setPosition(pos);
+							_map.setCenter(pos);
+						}, function() {
+							console.log("error in localization");
+						});
+
+					}, 5000);
+				});
+			} else {
+				// Browser doesn't support Geolocation
+				console.log("error in localization");
+			}
+
+			renderBeacon(beacon, true);
+		}
+
+		renderLayer(_currentLayer);
+	})
 }
 
 function initKeyboardEvent() {
+	document.addEventListener("keyup", function(e) {
+		$editor.shiftKey = e.shiftKey;
+	});
 	document.addEventListener("keydown", function(e) {
+		$editor.shiftKey = e.shiftKey;
 		switch (_currentEditMode) {
 			case EditMode.Topo:
 				if (e.keyCode == 65) { // "A" pressed
 					_currentTopoEditState = TopoEditState.Adding_Node;
 				} else if (e.keyCode == 83) { // "S" pressed
 					_currentTopoEditState = TopoEditState.Adding_Edge;
+				} else if (e.keyCode == 68) { // "D" pressed
+					_currentTopoEditState = TopoEditState.Adding_POI;
 				}
 				break;
 			case EditMode.Beacon:
@@ -248,16 +517,12 @@ function initKeyboardEvent() {
 	});
 
 	document.addEventListener("keyup", function(e) {
-		if (_currentTopoEditState == TopoEditState.Adding_Edge) {
-			if (_currentEdgeEditState != EdgeEditState.Edge_Done) {
-				if (_tmpEdgeLine) {
-					_tmpEdgeLine.setMap(null);
-				};
-				_tmpEdgeLine = null;
-				_tmpEdgeNode1 = null;
-				_tmpEdgeNode2 = null;
-			};
-		}
+		if (_tmpEdgeLine) {
+			_tmpEdgeLine.setMap(null);
+		};
+		_tmpEdgeLine = null;
+		_tmpEdgeNode1 = null;
+		_tmpEdgeNode2 = null;
 		_currentEdgeEditState = EdgeEditState.Doing_Nothing;
 		_currentTopoEditState = TopoEditState.Doing_Nothing;
 		_currentBeaconEditState = BeaconEditState.Doing_Nothing;
@@ -285,6 +550,7 @@ function addNewLayer() {
 				node.transitInfo[newLayer.z] = getNewTransitInfoToLayer(newLayer);
 			}
 		}
+		$editor.trigger("dataChange");
 	}
 }
 
@@ -292,10 +558,15 @@ function renderLayer(layer) {
 	console.log(["renderLayer", layer]);
 	renderRegionsInLayer(layer);
 	if (_currentEditMode == EditMode.Topo) {
-		renderNodesInLayer(layer);
-		renderEdgesInLayer(layer);
+		renderNodesInLayer(layer, _silent);
+		renderEdgesInLayer(layer, _silent);
+		$NC.poi.renderInLayer(layer);
+		_logFunction.renderLayer(layer);
 	} else if (_currentEditMode == EditMode.Beacon) {
+		loadNodesInLayer(layer, _silent);
+		loadEdgesInLayer(layer, _silent);
 		renderBeaconsInLayer(layer);
+		_logFunction.renderLayer(layer);
 	}
 }
 
@@ -305,6 +576,7 @@ function addNewBuildingName() {
 		var name = document.getElementById("topo-add-building-input").value;
 		_buildings[name] = {"name": name};
 		addOptionToSelect(name, _topoEditorBuildingChooser);
+		$editor.trigger("dataChange");
 	}
 }
 
@@ -323,9 +595,7 @@ $(document).ready(function() {
 
 
 $editor.on("modeChange", function(e, mode) {
-	if (_edgeInfoWindow) {_edgeInfoWindow.close();}
-	if (_nodeInfoWindow) {_nodeInfoWindow.close();}
-	if (_beaconInfoWindow) {_beaconInfoWindow.close();}
+	$NC.infoWindow.trigger("closeall");
 	_currentEditMode = mode;
 	if (_currentLayer) {
 		$editor.trigger("derender");
@@ -335,11 +605,12 @@ $editor.on("modeChange", function(e, mode) {
 
 $(window).on("hashchange", function(e) {
 	var hash = window.location.hash;
-	var mode = EditMode.File;
+	var mode = _currentEditMode || EditMode.File;
 	if(hash == "#tab0") { mode = EditMode.File; }
 	if(hash == "#tab1") { mode = EditMode.Map; }
 	if(hash == "#tab2") { mode = EditMode.Topo; }
 	if(hash == "#tab3") { mode = EditMode.Beacon; }
+	if(hash == "#tab4") { mode = EditMode.Localization; }
 	$editor.trigger("modeChange", mode);
 });
 
@@ -352,6 +623,30 @@ function prepareData() {
 	_data["lastUUID"] = _lastUUID;
 	_data["lastMajorID"] = _lastMajorID;
 	_data["lastMinorID"] = _lastMinorID;
+	_data["localizations"] = _localizations;
+	_data["isAdvanced"] = $NC.loc.isAdvanced();
+	_data["uuids"] = _uuids;
+	_data["unit"] = _unit;
+
+	for(var lk in _layers) {
+		var layer = _layers[lk];
+		for(var bk in layer.beacons) {
+			layer.beacons[bk].infoFromEdges = {};
+		}
+		for(var ek in layer.edges) {
+			calcBeaconPosForEdge(layer.beacons, layer.nodes, layer.edges[ek]);
+		}
+	}
+
+	_data["uuid"] = $util.genUUID();
+}
+
+function loadRemote() {
+	$.getJSON('public_maps/NavCogMapData-CMU.json', function(data) {
+		_data = data; //data is the JSON string
+		$editor.trigger("dataLoaded");
+		$(window).trigger("hashchange");
+	});
 }
 
 function saveLocally() {
@@ -363,11 +658,14 @@ function saveLocally() {
 function saveToDowndloadFile() {
 	prepareData();
 	var filename = "NavCogMapData.json";
-    var blob = new Blob([JSON.stringify(_data)], { type: 'text/json;charset=utf-8;' });
-    downloadFile(blob, filename);
+    downloadFile(JSON.stringify(_data, null, "\t"), window._lastLoadFileName || filename);
 }
 
-function downloadFile(blob, filename) {    
+function downloadFile(data, filename) {
+	downloadFileType(data, filename, ["application/json", "json"]);
+}
+function downloadFileType(data, filename, type) {
+	var blob = new Blob([data], { type: type[0]+';charset=utf-8;' });
     if (navigator.msSaveBlob) {
         navigator.msSaveBlob(blob, filename);
     } else {
@@ -376,16 +674,21 @@ function downloadFile(blob, filename) {
             var url = URL.createObjectURL(blob);
             link.setAttribute("href", url);
             link.setAttribute("download", filename);
-            link.style = "visibility:hidden";
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+        } else {
+        	link.href = 'data:attachment/'+type[1]+',' + data;
         }
+        link.style = "visibility:hidden";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     }
 }
 
 function removeAllData() {
-	localStorage.removeItem(_dataStorageLabel);
+	//localStorage.removeItem(_dataStorageLabel);
+	//$db.clearData();
+	_data = {};
+	$editor.trigger("dataLoaded");
 }
 
 function addOptionToSelect(text, chooser) {

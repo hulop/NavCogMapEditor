@@ -24,6 +24,11 @@ $(document).ready(function(){
   $('ul.tabs').each(function(){
     var $active, $content, $links = $(this).find('a');
     $active = $($links.filter('[href="'+location.hash+'"]')[0] || $links[0]);
+    
+    if ($active.hasClass("hidden")) {
+    	$active = $($links[0]);
+    }
+    
     $active.addClass('active');
     $content = $($active[0].hash);
     $links.not($active).each(function () {
