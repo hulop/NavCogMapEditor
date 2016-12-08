@@ -383,35 +383,44 @@ function initMapEvent() {
 			focus = new google.maps.LatLng(flat, flng);
 			_map.setCenter(focus);
 
+			_curmarker = new google.maps.Marker({
+ 				position: focus,
+ 				initposition: focus,
+ 				title:"Your position"
+			});
+
+			_curmarker.setMap(_map);
+
+
 			// Try HTML5 geolocation.
-			if (navigator.geolocation) {
-				$(function () {
-					var pos;
-					_curmarker = new google.maps.Marker({
-						position: pos,
-						title:"Your position"
-					});
-					setInterval(function () {
-
-						navigator.geolocation.getCurrentPosition(function(position) {
-							pos = {
-							lat: position.coords.latitude,
-							lng: position.coords.longitude
-							};
-							_curmarker.setMap(_map);
-
-							_curmarker.setPosition(pos);
-							_map.setCenter(pos);
-						}, function() {
-							console.log("error in localization");
-						});
-
-					}, 5000);
-				});
-			} else {
-				// Browser doesn't support Geolocation
-				console.log("error in localization");
-			}
+// 			if (navigator.geolocation) {
+// 				$(function () {
+// 					var pos;
+// 					_curmarker = new google.maps.Marker({
+// 						position: pos,
+// 						title:"Your position"
+// 					});
+// 					setInterval(function () {
+//
+// 						navigator.geolocation.getCurrentPosition(function(position) {
+// 							pos = {
+// 							lat: position.coords.latitude,
+// 							lng: position.coords.longitude
+// 							};
+// 							_curmarker.setMap(_map);
+//
+// 							_curmarker.setPosition(pos);
+// 							_map.setCenter(pos);
+// 						}, function() {
+// 							console.log("error in localization");
+// 						});
+//
+// 					}, 5000);
+// 				});
+// 			} else {
+// 				// Browser doesn't support Geolocation
+// 				console.log("error in localization");
+// 			}
 
 			// if (beaconlist = location.search.match(/beaconlist=([^&]*)/)) {
 			// 	blistext="navcog://beaconsweeper?major=65535&beacons="+beaconlist[1]+"wid=1&edge="+edgeID;
@@ -459,42 +468,57 @@ function initMapEvent() {
 			focus = new google.maps.LatLng(blat, blng);
 			//_map.setCenter(focus);
 
+			_curmarker = new google.maps.Marker({
+ 				position: focus,
+ 				initposition: focus,
+ 				title:"Your position"
+			});
+
+			_curmarker.setMap(_map);
+
 			// Try HTML5 geolocation.
-			if (navigator.geolocation) {
-				_curmarker = new google.maps.Marker({
-					position: focus,
-					title:"Your position"
-				});
-
-				_curmarker.setMap(_map);
-
-				$(function () {
-					setInterval(function () {
-
-						navigator.geolocation.getCurrentPosition(function(position) {
-							var pos = {
-							lat: position.coords.latitude,
-							lng: position.coords.longitude
-							};
-
-							_curmarker.setPosition(pos);
-							_map.setCenter(pos);
-						}, function() {
-							console.log("error in localization");
-						});
-
-					}, 5000);
-				});
-			} else {
-				// Browser doesn't support Geolocation
-				console.log("error in localization");
-			}
+// 			if (navigator.geolocation) {
+// 				_curmarker = new google.maps.Marker({
+// 					position: focus,
+// 					title:"Your position"
+// 				});
+//
+// 				_curmarker.setMap(_map);
+//
+// 				$(function () {
+// 					setInterval(function () {
+//
+// 						navigator.geolocation.getCurrentPosition(function(position) {
+// 							var pos = {
+// 							lat: position.coords.latitude,
+// 							lng: position.coords.longitude
+// 							};
+//
+// 							_curmarker.setPosition(pos);
+// 							_map.setCenter(pos);
+// 						}, function() {
+// 							console.log("error in localization");
+// 						});
+//
+// 					}, 5000);
+// 				});
+// 			} else {
+// 				// Browser doesn't support Geolocation
+// 				console.log("error in localization");
+// 			}
 
 			renderBeacon(beacon, true);
 		}
 
 		renderLayer(_currentLayer);
 	})
+}
+
+function setpos(lat,lng) {
+ 				pos = new google.maps.LatLng(lat,lng);
+ 				pos2 = new google.maps.LatLng((lat+_curmarker.initposition.lat())/2, (lng+_curmarker.initposition.lng())/2);
+ 				_curmarker.setPosition(pos);
+ 				_map.setCenter(pos2);
 }
 
 function initKeyboardEvent() {
