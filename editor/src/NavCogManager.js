@@ -432,18 +432,8 @@ function initMapEvent() {
 
 			beacon = _currentLayer.beacons[beaconID];
 			beacon.img = 1;
-			blat = beacon.lat;
-			blng = beacon.lng;
-			focus = new google.maps.LatLng(blat, blng);
-			//_map.setCenter(focus);
-
-			_curmarker = new google.maps.Marker({
- 				position: focus,
- 				initposition: focus,
- 				title:"Your position"
-			});
-
-			_curmarker.setMap(_map);
+			focus = new google.maps.LatLng(beacon.lat, beacon.lng);
+			_map.setCenter(focus);
 
 			renderBeacon(beacon, true);
 		}
