@@ -188,13 +188,20 @@ $editor.on("dataLoaded", function() {
 	$("#advanced-mode-check").trigger("change");
 
 	if (location.search.match(/hidden/)) {
-		$("#tabs").hide();
-		$("#tabs-container").hide();
-		$("#google-map-view").css({ 'margin-left': "0px" });
+		//$("#tabs").show();
+		//$("#tabs-container").show();
+		//$("#google-map-view").css({ 'margin-left': "0px" });
 		_silent = true;
+	} else {
+		$("#tabs").show();
+		$("#tabs-container").show();
+		document.getElementById("google-map-view").className = "google-map-view-show";
+
 	}
 
 	$(document.body).show();
+
+	document.getElementById("loading").style.visibility = "hidden";
 });
 
 $editor.on("layerChange", function(e, layer) {

@@ -38,6 +38,26 @@ body {
   padding: 0;
 }
 
+#loading {
+	position:absolute;
+	left:0px;
+	top:0px;
+	width:100%;
+	height:100%;
+	background: rgba(0, 0, 0, 0.5);
+	z-index: 99;
+	display: table;
+}
+
+#loading_in {
+	vertical-align: middle;
+	text-align: center;
+	display: table-cell;
+	font-family: "Lucida Grande", "Arial", sans-serif;
+	font-size: 300%;
+	color:#fff;
+}
+
 p, h3 {
   margin-top: 5px;
   margin-bottom:5px;
@@ -45,6 +65,7 @@ p, h3 {
 
 #tabs-container {
 	position:absolute;
+	display:none;
 	left:0px;
 	top:30px;
 	bottom:0px;
@@ -61,6 +82,7 @@ p, h3 {
 	height: 30px;
 	left: 0px;
 	top: 0px;
+	display:none;
 	background-color: white;
 }
 
@@ -153,6 +175,16 @@ label {
 }
 .advanced #edge-info-basic {
 	display: none;
+}
+
+#google-map-view {
+height: 100%;
+margin: 0px;
+padding: 0px;
+}
+
+.google-map-view-show {
+margin-left: 355px;
 }
 
 #google-map-view label {
