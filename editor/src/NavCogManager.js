@@ -391,37 +391,6 @@ function initMapEvent() {
 
 			_curmarker.setMap(_map);
 
-
-			// Try HTML5 geolocation.
-// 			if (navigator.geolocation) {
-// 				$(function () {
-// 					var pos;
-// 					_curmarker = new google.maps.Marker({
-// 						position: pos,
-// 						title:"Your position"
-// 					});
-// 					setInterval(function () {
-//
-// 						navigator.geolocation.getCurrentPosition(function(position) {
-// 							pos = {
-// 							lat: position.coords.latitude,
-// 							lng: position.coords.longitude
-// 							};
-// 							_curmarker.setMap(_map);
-//
-// 							_curmarker.setPosition(pos);
-// 							_map.setCenter(pos);
-// 						}, function() {
-// 							console.log("error in localization");
-// 						});
-//
-// 					}, 5000);
-// 				});
-// 			} else {
-// 				// Browser doesn't support Geolocation
-// 				console.log("error in localization");
-// 			}
-
 			// if (beaconlist = location.search.match(/beaconlist=([^&]*)/)) {
 			// 	blistext="navcog://beaconsweeper?major=65535&beacons="+beaconlist[1]+"wid=1&edge="+edgeID;
 			// 	document.getElementById("blist").href=blistext;
@@ -475,37 +444,6 @@ function initMapEvent() {
 			});
 
 			_curmarker.setMap(_map);
-
-			// Try HTML5 geolocation.
-// 			if (navigator.geolocation) {
-// 				_curmarker = new google.maps.Marker({
-// 					position: focus,
-// 					title:"Your position"
-// 				});
-//
-// 				_curmarker.setMap(_map);
-//
-// 				$(function () {
-// 					setInterval(function () {
-//
-// 						navigator.geolocation.getCurrentPosition(function(position) {
-// 							var pos = {
-// 							lat: position.coords.latitude,
-// 							lng: position.coords.longitude
-// 							};
-//
-// 							_curmarker.setPosition(pos);
-// 							_map.setCenter(pos);
-// 						}, function() {
-// 							console.log("error in localization");
-// 						});
-//
-// 					}, 5000);
-// 				});
-// 			} else {
-// 				// Browser doesn't support Geolocation
-// 				console.log("error in localization");
-// 			}
 
 			renderBeacon(beacon, true);
 		}
