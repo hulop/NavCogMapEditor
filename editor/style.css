@@ -178,13 +178,16 @@ label {
 }
 
 #google-map-view {
-height: 100%;
-margin: 0px;
-padding: 0px;
+	height: 100%;
+	padding: 0px;
+}
+
+.google-map-view-hide {
+	margin: 0px;
 }
 
 .google-map-view-show {
-margin-left: 355px;
+	margin-left: 355px;
 }
 
 #google-map-view label {
