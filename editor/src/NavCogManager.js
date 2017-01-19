@@ -383,13 +383,13 @@ function initMapEvent() {
 			focus = new google.maps.LatLng(flat, flng);
 			_map.setCenter(focus);
 
-			_curmarker = new google.maps.Marker({
- 				position: focus,
- 				initposition: focus,
- 				title:"Your position"
-			});
+			//_curmarker = new google.maps.Marker({
+ 			//	position: focus,
+ 			//	initposition: focus,
+ 			//	title:"Your position"
+			//});
 
-			_curmarker.setMap(_map);
+			// _curmarker.setMap(_map);
 
 			// if (beaconlist = location.search.match(/beaconlist=([^&]*)/)) {
 			// 	blistext="navcog://beaconsweeper?major=65535&beacons="+beaconlist[1]+"wid=1&edge="+edgeID;
