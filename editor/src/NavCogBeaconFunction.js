@@ -70,6 +70,7 @@ function loadBeacon(beacon, silent) {
 			anchor: new google.maps.Point(12.5, 12.5),
 			url: "./img/round-blue.png"
 		}
+		var labelContent = beacon.id;
 
 		if (typeof beacon.img != 'undefined') {
 			image = {
@@ -77,6 +78,7 @@ function loadBeacon(beacon, silent) {
 				anchor: new google.maps.Point(25, 25),
 				url: "./img/round-orange.png"
 			}
+			labelContent = null;
 		}
 
 		var beaconMarker = new MarkerWithLabel({
@@ -88,7 +90,7 @@ function loadBeacon(beacon, silent) {
 				coords: [12.5, 12.5, 12.5],
 				type: "circle",
 			},
-			labelContent: beacon.id,
+			labelContent: labelContent,
 			labelClass: "labels",
 	    	labelAnchor: new google.maps.Point(10.5, 6.25)
 	    });
