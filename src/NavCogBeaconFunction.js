@@ -368,12 +368,14 @@ function saveBeaconCSV() {
 
 function saveSweepList() {
 	result = "bid,minor,lat,lng,edge,floor,start,end\n";
-	beacons = _currentLayer.beacons;
 	for(l in _layers) {
+		_currentLayer = _layers[l];
+		_edgePolylines = [];
+		loadEdgesInLayer(_layers[l], true);
+		console.log(_edgePolylines)
 		beacons = _layers[l].beacons;
 		for(beacon in beacons) {
 			position = new google.maps.LatLng(beacons[beacon].lat, beacons[beacon].lng);
-			console.log([beacon, position]);
 			spfe = findShortestPointFromEdge(position);
 			if(spfe != null) {
 				var start = spfe.edge.node1;
